@@ -1,0 +1,4842 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinTweaker 10 — Liquid Glass</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #eef4fb;
+    --fg: #172033;
+    --fg-soft: rgba(23, 32, 51, .70);
+    --muted: rgba(23, 32, 51, .48);
+    --line: rgba(72, 90, 116, .14);
+    --line-strong: rgba(72, 90, 116, .22);
+    --panel: rgba(255, 255, 255, .72);
+    --panel-strong: rgba(255, 255, 255, .88);
+    --glass: rgba(255, 255, 255, .54);
+    --blue: #4f7dff;
+    --violet: #7668f4;
+    --safe: #168b62;
+    --warn: #a96d00;
+    --danger: #bd3a4a;
+    --pc: #4662b5;
+    --laptop: #1f7c9d;
+    --radius-xl: 34px;
+    --radius-lg: 26px;
+    --radius-md: 18px;
+    --shadow: 0 12px 28px rgba(54, 72, 100, .12);
+    --shadow-small: 0 6px 14px rgba(54, 72, 100, .08);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    color: var(--fg);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    background:
+      radial-gradient(720px 440px at 7% -8%, rgba(104, 156, 255, .44), transparent 62%),
+      radial-gradient(680px 420px at 96% 0%, rgba(255, 190, 205, .36), transparent 58%),
+      radial-gradient(760px 460px at 54% 110%, rgba(177, 236, 210, .30), transparent 60%),
+      linear-gradient(135deg, #f7faff 0%, #edf4fd 48%, #f8f1f7 100%);
+  }
+
+  .bg-soft {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      linear-gradient(120deg, rgba(255,255,255,.28), transparent 36%, rgba(255,255,255,.18) 72%, transparent),
+      radial-gradient(circle at 20% 16%, rgba(255,255,255,.42), transparent 34%);
+    opacity: .58;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 14px;
+    z-index: 100;
+    width: min(1440px, calc(100% - 28px));
+    min-height: 72px;
+    margin: 14px auto 0;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.70);
+    background: linear-gradient(135deg, rgba(255,255,255,.78), rgba(255,255,255,.48));
+    backdrop-filter: blur(12px) saturate(1.1);
+    -webkit-backdrop-filter: blur(12px) saturate(1.1);
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.88);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 240px;
+    font-weight: 800;
+    letter-spacing: -.04em;
+    white-space: nowrap;
+  }
+
+  .brand-icon {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 18px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--blue), var(--violet));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.48), 0 10px 22px rgba(70, 101, 200, .18);
+    overflow: hidden;
+  }
+
+  .brand-name {
+    font-size: 19px;
+    line-height: 1;
+  }
+
+  .brand-name span {
+    color: #3157d2;
+  }
+
+  .brand-version {
+    margin-left: 2px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    border: 1px solid rgba(72,90,116,.12);
+    color: rgba(23,32,51,.56);
+    background: rgba(255,255,255,.62);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .topbar-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .search {
+    position: relative;
+    width: 270px;
+  }
+
+  .search i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(23,32,51,.42);
+    font-size: 13px;
+  }
+
+  .search input {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px 0 38px;
+    border: 1px solid rgba(255,255,255,.74);
+    border-radius: 999px;
+    outline: none;
+    background: rgba(255,255,255,.66);
+    color: var(--fg);
+    font: inherit;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), var(--shadow-small);
+  }
+
+  .search input:focus {
+    border-color: rgba(79,125,255,.42);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 0 0 4px rgba(79,125,255,.10);
+  }
+
+  .search input::placeholder {
+    color: rgba(23,32,51,.44);
+  }
+
+  .btn {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 0 16px;
+    border: 1px solid rgba(255,255,255,.72);
+    border-radius: 999px;
+    background: rgba(255,255,255,.64);
+    color: rgba(23,32,51,.76);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.88), var(--shadow-small);
+    transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+    background: rgba(255,255,255,.82);
+  }
+
+  .btn-primary {
+    color: #fff;
+    border-color: rgba(255,255,255,.62);
+    background: linear-gradient(135deg, var(--blue), var(--violet));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.40), 0 9px 20px rgba(78, 105, 220, .20);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #5b87ff, #8274f6);
+  }
+
+  .layout {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 22px;
+    width: min(1440px, calc(100% - 28px));
+    margin: 20px auto 34px;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 104px;
+    width: 292px;
+    min-width: 292px;
+    height: calc(100vh - 120px);
+    padding: 16px 10px;
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(255,255,255,.70);
+    background: linear-gradient(160deg, rgba(255,255,255,.74), rgba(255,255,255,.44));
+    backdrop-filter: blur(12px) saturate(1.08);
+    -webkit-backdrop-filter: blur(12px) saturate(1.08);
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.86);
+    overflow-y: auto;
+  }
+
+  .sidebar-label {
+    padding: 12px 15px 7px;
+    color: rgba(23,32,51,.42);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+
+  .sidebar-item {
+    width: 100%;
+    min-height: 42px;
+    margin: 3px 0;
+    padding: 9px 12px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    border: 1px solid transparent;
+    border-radius: 18px;
+    background: transparent;
+    color: rgba(23,32,51,.66);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 650;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color .12s ease, color .12s ease, border-color .12s ease;
+  }
+
+  .sidebar-item i {
+    width: 18px;
+    text-align: center;
+  }
+
+  .sidebar-item:hover {
+    background: rgba(255,255,255,.48);
+    border-color: rgba(255,255,255,.56);
+    color: var(--fg);
+  }
+
+  .sidebar-item.active {
+    color: #fff;
+    background: linear-gradient(135deg, var(--blue), var(--violet));
+    border-color: rgba(255,255,255,.54);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.36), 0 8px 16px rgba(78, 105, 220, .16);
+  }
+
+  .sidebar-badge {
+    min-width: 25px;
+    margin-left: auto;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.74);
+    color: rgba(23,32,51,.72);
+    border: 1px solid rgba(72,90,116,.10);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sidebar-item.active .sidebar-badge {
+    background: rgba(255,255,255,.18);
+    border-color: rgba(255,255,255,.24);
+    color: #fff;
+  }
+
+  .sidebar-status {
+    margin: 16px 0 2px;
+    padding: 14px;
+    border-radius: 22px;
+    background: rgba(255,255,255,.56);
+    border: 1px solid rgba(255,255,255,.62);
+  }
+
+  .status-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 9px;
+    color: rgba(23,32,51,.72);
+    font-size: 12px;
+    font-weight: 750;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--blue);
+  }
+
+  .progress {
+    height: 6px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(120,137,164,.16);
+  }
+
+  .progress-fill {
+    width: 0%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--blue), var(--violet));
+    transition: width .16s ease;
+  }
+
+  .progress-text {
+    margin-top: 7px;
+    color: rgba(23,32,51,.54);
+    font-size: 11px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .content {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 4px 40px;
+  }
+
+  .tab {
+    display: none;
+  }
+
+  .tab.active {
+    display: block;
+  }
+
+  .section-header {
+    margin: 8px 0 20px;
+  }
+
+  .section-title {
+    color: var(--fg);
+    font-size: clamp(30px, 3vw, 42px);
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -.055em;
+  }
+
+  .section-title i {
+    color: #3157d2;
+    margin-right: 10px;
+  }
+
+  .section-desc {
+    max-width: 880px;
+    margin-top: 9px;
+    color: var(--fg-soft);
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .panel {
+    padding: 18px 20px;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255,255,255,.70);
+    background: linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.66));
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.88);
+  }
+
+  .info-panel {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 18px;
+  }
+
+  .info-panel i {
+    margin-top: 2px;
+    color: #3157d2;
+    font-size: 18px;
+  }
+
+  .info-panel p {
+    color: var(--fg-soft);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .info-panel strong {
+    color: var(--fg);
+  }
+
+  .device-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 20px;
+  }
+
+  .legend-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.72);
+    border: 1px solid rgba(72,90,116,.12);
+    color: rgba(23,32,51,.66);
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.86);
+  }
+
+  .legend-chip-all i {
+    font-size: 8px;
+    color: rgba(23,32,51,.42);
+  }
+
+  .legend-chip-desktop {
+    color: var(--pc);
+  }
+
+  .legend-chip-laptop {
+    color: var(--laptop);
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin: 0 0 20px;
+  }
+
+  .stat-card {
+    padding: 18px;
+    border-radius: var(--radius-lg);
+    background: rgba(255,255,255,.76);
+    border: 1px solid rgba(255,255,255,.70);
+    box-shadow: var(--shadow-small), inset 0 1px 0 rgba(255,255,255,.88);
+  }
+
+  .stat-label {
+    color: rgba(23,32,51,.44);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .10em;
+    text-transform: uppercase;
+  }
+
+  .stat-value {
+    margin: 4px 0 2px;
+    color: var(--fg);
+    font-size: 31px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: -.04em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-sub {
+    color: rgba(23,32,51,.54);
+    font-size: 12px;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .presets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 15px;
+  }
+
+  .preset-card {
+    position: relative;
+    overflow: hidden;
+    padding: 19px;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255,255,255,.70);
+    background: rgba(255,255,255,.76);
+    box-shadow: var(--shadow-small), inset 0 1px 0 rgba(255,255,255,.88);
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
+  }
+
+  .preset-card:hover {
+    transform: translateY(-1px);
+    background: rgba(255,255,255,.90);
+    box-shadow: var(--shadow);
+  }
+
+  .preset-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 12px;
+    display: grid;
+    place-items: center;
+    border-radius: 20px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--blue), var(--violet));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 10px 20px rgba(70, 101, 200, .14);
+  }
+
+  .preset-name {
+    color: var(--fg);
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -.02em;
+  }
+
+  .preset-desc {
+    margin-top: 6px;
+    color: var(--fg-soft);
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  .preset-meta {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .preset-count {
+    color: #3157d2;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .tweak-group {
+    margin-bottom: 26px;
+  }
+
+  .tweak-group-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0 0 10px;
+    padding: 4px 2px;
+    color: var(--fg);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -.01em;
+  }
+
+  .tweak-group-title i {
+    color: rgba(23,32,51,.42);
+    font-size: 13px;
+  }
+
+  .risk-shelf {
+    margin: 10px 0 16px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.70);
+    background: rgba(255,255,255,.74);
+    box-shadow: var(--shadow-small), inset 0 1px 0 rgba(255,255,255,.88);
+  }
+
+  .risk-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 15px 17px;
+    border-bottom: 1px solid rgba(72,90,116,.10);
+    background: rgba(255,255,255,.52);
+  }
+
+  .risk-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--fg);
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .risk-note {
+    margin-top: 2px;
+    color: rgba(23,32,51,.55);
+    font-size: 11.5px;
+    line-height: 1.35;
+  }
+
+  .risk-counter {
+    min-width: 26px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.82);
+    color: rgba(23,32,51,.70);
+    border: 1px solid rgba(72,90,116,.12);
+    font-size: 11px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  .risk-safe .risk-head {
+    box-shadow: inset 4px 0 0 var(--safe);
+  }
+
+  .risk-warning .risk-head {
+    box-shadow: inset 4px 0 0 #d49013;
+  }
+
+  .risk-danger .risk-head {
+    box-shadow: inset 4px 0 0 var(--danger);
+  }
+
+  .risk-body {
+    padding: 9px;
+  }
+
+  .tweak-card {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin: 8px 0;
+    padding: 16px 18px;
+    border-radius: 22px;
+    background: rgba(255,255,255,.70);
+    border: 1px solid rgba(72,90,116,.10);
+    transition: background-color .12s ease, box-shadow .12s ease;
+  }
+
+  .tweak-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 16px;
+    bottom: 16px;
+    width: 4px;
+    border-radius: 999px;
+  }
+
+  .tweak-card.risk-safe::before { background: var(--safe); }
+  .tweak-card.risk-warning::before { background: #d49013; }
+  .tweak-card.risk-danger::before { background: var(--danger); }
+
+  .tweak-card:hover {
+    background: rgba(255,255,255,.88);
+    box-shadow: var(--shadow-small);
+  }
+
+  .tweak-card.active {
+    background: linear-gradient(135deg, rgba(233,240,255,.92), rgba(255,255,255,.82));
+    border-color: rgba(79,125,255,.26);
+    box-shadow: 0 10px 22px rgba(79,125,255,.12), inset 0 1px 0 rgba(255,255,255,.88);
+  }
+
+  .toggle {
+    position: relative;
+    flex: 0 0 auto;
+    width: 52px;
+    height: 32px;
+    margin-top: 1px;
+  }
+
+  .toggle input {
+    display: none;
+  }
+
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(126,143,169,.24);
+    border: 1px solid rgba(96,112,138,.18);
+    box-shadow: inset 0 1px 2px rgba(23,32,51,.10);
+    cursor: pointer;
+    transition: background-color .14s ease, border-color .14s ease;
+  }
+
+  .toggle-slider::after {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(54,72,100,.20);
+    transition: transform .14s ease;
+  }
+
+  .toggle input:checked + .toggle-slider {
+    background: linear-gradient(135deg, var(--blue), var(--violet));
+    border-color: rgba(255,255,255,.58);
+  }
+
+  .toggle input:checked + .toggle-slider::after {
+    transform: translateX(20px);
+  }
+
+  .tweak-info {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .tweak-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    color: var(--fg);
+    font-size: 14.5px;
+    font-weight: 750;
+    line-height: 1.35;
+  }
+
+  .tweak-desc {
+    margin-top: 5px;
+    color: rgba(23,32,51,.64);
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+
+  .tweak-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 8px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 100%;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: .03em;
+    white-space: nowrap;
+  }
+
+  .badge-safe {
+    color: var(--safe);
+    background: rgba(22,139,98,.10);
+    border-color: rgba(22,139,98,.18);
+  }
+
+  .badge-warning {
+    color: var(--warn);
+    background: rgba(255,181,73,.16);
+    border-color: rgba(169,109,0,.16);
+  }
+
+  .badge-danger {
+    color: var(--danger);
+    background: rgba(255,103,120,.13);
+    border-color: rgba(189,58,74,.16);
+  }
+
+  .badge-device-pc {
+    color: var(--pc);
+    background: rgba(92,118,208,.12);
+    border-color: rgba(92,118,208,.18);
+  }
+
+  .badge-device-laptop {
+    color: var(--laptop);
+    background: rgba(51,164,205,.12);
+    border-color: rgba(51,164,205,.18);
+  }
+
+  .badge-reg {
+    max-width: min(100%, 620px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: rgba(23,32,51,.50);
+    background: rgba(233,239,248,.70);
+    border-color: rgba(72,90,116,.10);
+    letter-spacing: 0;
+    font-weight: 650;
+  }
+
+  .empty-state {
+    padding: 52px 20px;
+    text-align: center;
+    border-radius: var(--radius-lg);
+    background: rgba(255,255,255,.72);
+    border: 1px solid rgba(255,255,255,.70);
+  }
+
+  .empty-state i {
+    color: rgba(23,32,51,.38);
+    font-size: 40px;
+    margin-bottom: 12px;
+  }
+
+  .empty-state h3 {
+    font-size: 18px;
+  }
+
+  .empty-state p {
+    margin-top: 6px;
+    color: var(--fg-soft);
+    font-size: 13px;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(226,234,246,.50);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .modal-overlay.show {
+    display: flex;
+  }
+
+  .modal {
+    width: min(680px, 100%);
+    max-height: 82vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius-xl);
+    background: rgba(255,255,255,.88);
+    border: 1px solid rgba(255,255,255,.72);
+    box-shadow: var(--shadow);
+  }
+
+  .modal-header,
+  .modal-footer {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .modal-header {
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(72,90,116,.12);
+  }
+
+  .modal-header h3 {
+    font-size: 17px;
+  }
+
+  .modal-close {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(72,90,116,.12);
+    border-radius: 999px;
+    background: rgba(233,239,248,.82);
+    color: rgba(23,32,51,.64);
+    cursor: pointer;
+  }
+
+  .modal-body {
+    padding: 18px 20px;
+    overflow: auto;
+  }
+
+  .modal-body pre {
+    padding: 16px;
+    border-radius: 20px;
+    background: #172033;
+    color: #dbe6ff;
+    font: 12px/1.55 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .modal-footer {
+    justify-content: flex-end;
+    border-top: 1px solid rgba(72,90,116,.12);
+  }
+
+  .toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .toast {
+    min-width: 280px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px;
+    border-radius: 20px;
+    background: rgba(255,255,255,.86);
+    border: 1px solid rgba(255,255,255,.72);
+    color: var(--fg);
+    box-shadow: var(--shadow);
+    font-size: 13px;
+    font-weight: 650;
+  }
+
+  .toast.success i { color: var(--safe); }
+  .toast.error i { color: var(--danger); }
+  .toast.info i { color: #3157d2; }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: rgba(120,137,164,.28);
+    background-clip: content-box;
+  }
+
+  @media (max-width: 1080px) {
+    .topbar {
+      border-radius: 28px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .topbar-actions {
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .search {
+      flex: 1 1 260px;
+    }
+
+    .layout {
+      display: block;
+    }
+
+    .sidebar {
+      display: none;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .topbar,
+    .layout {
+      width: calc(100% - 20px);
+    }
+
+    .brand {
+      min-width: 0;
+    }
+
+    .brand-version {
+      display: none;
+    }
+
+    .btn {
+      flex: 1 1 auto;
+    }
+
+    .stats-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .presets-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .badge-reg {
+      display: none;
+    }
+  }
+
+  @media (max-width: 460px) {
+    .stats-row {
+      grid-template-columns: 1fr;
+    }
+
+    .section-title {
+      font-size: 30px;
+    }
+
+    .search {
+      flex-basis: 100%;
+    }
+
+    .toast-container {
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+    }
+
+    .toast {
+      min-width: 0;
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+
+
+  /* v4.5 — dropdown search and refined button feedback */
+  .search {
+    z-index: 250;
+  }
+
+  .search-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    z-index: 500;
+    display: none;
+    max-height: 430px;
+    overflow: auto;
+    padding: 8px;
+    border-radius: 22px;
+    border: 1px solid rgba(255,255,255,.76);
+    background: rgba(255,255,255,.92);
+    box-shadow: 0 18px 44px rgba(54,72,100,.18), inset 0 1px 0 rgba(255,255,255,.92);
+    backdrop-filter: blur(14px) saturate(1.1);
+    -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  }
+
+  .search-dropdown.show {
+    display: block;
+  }
+
+  .search-result {
+    width: 100%;
+    display: block;
+    padding: 11px 12px;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    background: transparent;
+    color: var(--fg);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .search-result:hover,
+  .search-result:focus {
+    outline: none;
+    background: rgba(79,125,255,.08);
+    border-color: rgba(79,125,255,.16);
+  }
+
+  .search-result-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--fg);
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.3;
+  }
+
+  .search-result-path {
+    margin-top: 4px;
+    color: rgba(23,32,51,.56);
+    font-size: 11.5px;
+    line-height: 1.35;
+  }
+
+  .search-result-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 7px;
+  }
+
+  .search-empty,
+  .search-more {
+    padding: 12px;
+    color: rgba(23,32,51,.56);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .search-more {
+    border-top: 1px solid rgba(72,90,116,.10);
+    margin-top: 4px;
+  }
+
+  .search-highlight {
+    outline: 3px solid rgba(79,125,255,.26);
+    box-shadow: 0 14px 34px rgba(79,125,255,.18), inset 0 1px 0 rgba(255,255,255,.88) !important;
+  }
+
+  .btn {
+    transform: translateZ(0);
+    will-change: transform;
+    transition: transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.90), 0 10px 20px rgba(54,72,100,.12);
+  }
+
+  .btn:active {
+    transform: translateY(0) scale(.985);
+    box-shadow: inset 0 2px 8px rgba(23,32,51,.10), 0 5px 12px rgba(54,72,100,.08);
+  }
+
+  .btn-primary {
+    border-color: rgba(255,255,255,.66);
+    background: linear-gradient(135deg, #477bff 0%, #665ff2 58%, #846cf0 100%);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #5a89ff 0%, #756cf5 58%, #927af3 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.44), 0 12px 24px rgba(79,105,220,.22);
+  }
+
+  .btn i {
+    pointer-events: none;
+  }
+
+  @media (max-width: 720px) {
+    .search-dropdown {
+      position: fixed;
+      left: 10px;
+      right: 10px;
+      top: 142px;
+    }
+  }
+
+
+
+  /* ===== v4.5.1 Firefox / Zen safe rendering =====
+     Firefox-like engines can render clipped gradients/backdrop layers
+     around rounded buttons differently from Chromium. This block removes
+     the moving/glass layer from buttons only in Firefox/Zen while keeping
+     the rest of the interface visually close.
+  */
+  @supports (-moz-appearance: none) {
+    .btn,
+    .btn-primary,
+    .modal-close,
+    .preset-card,
+    .sidebar-item,
+    .toggle-slider,
+    .search input {
+      transform: translateZ(0);
+      backface-visibility: hidden;
+    }
+
+    .btn,
+    .btn-primary {
+      overflow: hidden !important;
+      isolation: isolate !important;
+      background-clip: padding-box !important;
+      border-radius: 999px !important;
+      transition: background-color .12s ease, box-shadow .12s ease, transform .12s ease !important;
+    }
+
+    .btn::before,
+    .btn::after,
+    .btn-primary::before,
+    .btn-primary::after {
+      display: none !important;
+      content: none !important;
+    }
+
+    .btn-primary {
+      background: #5f6ff2 !important;
+      border-color: rgba(255,255,255,.66) !important;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.34),
+        0 7px 16px rgba(95,111,242,.20) !important;
+      color: #fff !important;
+    }
+
+    .btn-primary:hover {
+      background: #6577f6 !important;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.34),
+        0 8px 17px rgba(95,111,242,.22) !important;
+    }
+
+    .btn:not(.btn-primary) {
+      background: rgba(255,255,255,.78) !important;
+      border-color: rgba(72,90,116,.12) !important;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.88),
+        0 5px 12px rgba(54,72,100,.08) !important;
+      color: rgba(23,32,51,.78) !important;
+    }
+
+    .btn:not(.btn-primary):hover {
+      background: rgba(255,255,255,.90) !important;
+    }
+
+    .topbar,
+    .sidebar,
+    .modal-overlay,
+    .search input {
+      backdrop-filter: blur(8px) saturate(1.03) !important;
+      -webkit-backdrop-filter: blur(8px) saturate(1.03) !important;
+    }
+
+    .toggle-slider {
+      overflow: hidden !important;
+      background-clip: padding-box !important;
+    }
+
+    .brand-icon,
+    .preset-icon {
+      overflow: hidden !important;
+      background-clip: padding-box !important;
+    }
+  }
+
+</style>
+</head>
+<body>
+<div class="bg-soft"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon"><i class="fas fa-bolt"></i></div>
+    <div class="brand-name">Win<span>Tweaker</span> 10</div>
+    <div class="brand-version">v4.5.1 firefox-safe</div>
+  </div>
+
+  <div class="topbar-actions">
+    <div class="search">
+      <i class="fas fa-search"></i>
+      <input type="text" id="searchInput" placeholder="Поиск твиков..." aria-label="Поиск твиков" autocomplete="off">
+      <div class="search-dropdown" id="searchDropdown" role="listbox" aria-label="Результаты поиска"></div>
+    </div>
+    <button class="btn" type="button" onclick="resetAll()" title="Сбросить всё">
+      <i class="fas fa-undo"></i> Сброс
+    </button>
+    <button class="btn btn-primary" type="button" onclick="generateScript()">
+      <i class="fas fa-download"></i> Скачать .bat
+    </button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar" aria-label="Категории твиков"></nav>
+
+  <main class="content" id="content">
+    <section class="tab active" id="tab-dashboard">
+      <div class="section-header">
+        <h1 class="section-title">Обзор системы</h1>
+        <p class="section-desc">Основной экран показывает все твики сразу. Общие функции идут без метки. То, что относится только к определённому типу устройства, помечается отдельной подписью.</p>
+      </div>
+
+      <div class="panel info-panel">
+        <i class="fas fa-circle-info"></i>
+        <p><strong>Как это работает:</strong> выберите нужные твики и нажмите «Скачать .bat». Скрипт меняет параметры Windows и должен запускаться <strong>от имени администратора</strong>. Перед применением лучше создать точку восстановления.</p>
+      </div>
+
+      <div class="device-legend">
+        <span class="legend-chip legend-chip-all"><i class="fas fa-circle"></i> Без метки — работает на ПК и ноутбуке</span>
+        <span class="legend-chip legend-chip-desktop"><i class="fas fa-desktop"></i> Только для ПК</span>
+        <span class="legend-chip legend-chip-laptop"><i class="fas fa-laptop"></i> Только для ноутбука</span>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Всего твиков</div>
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-sub">доступно</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Активировано</div>
+          <div class="stat-value" id="stat-active">0</div>
+          <div class="stat-sub">выбрано</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Рекомендуется</div>
+          <div class="stat-value" id="stat-safe">0</div>
+          <div class="stat-sub">низкий риск</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">С осторожностью</div>
+          <div class="stat-value" id="stat-warn">0</div>
+          <div class="stat-sub">нужна проверка</div>
+        </div>
+      </div>
+
+      <div class="panel info-panel">
+        <i class="fas fa-triangle-exclamation" style="color:#a96d00"></i>
+        <p><strong>Важно:</strong> жёлтые и красные пункты не включайте пакетом вслепую. Читайте описание каждого твика, особенно если он касается сна, питания, сетевых служб, обновлений или защитных функций Windows.</p>
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-primary" type="button" onclick="switchTab('presets')">
+          <i class="fas fa-wand-magic-sparkles"></i> Быстрые пресеты
+        </button>
+        <button class="btn" type="button" onclick="selectSafeOnly()">
+          <i class="fas fa-check-double"></i> Выбрать рекомендуемые
+        </button>
+        <button class="btn" type="button" onclick="deselectAll()">
+          <i class="fas fa-xmark"></i> Снять все
+        </button>
+      </div>
+    </section>
+
+    <section class="tab" id="tab-presets">
+      <div class="section-header">
+        <h1 class="section-title">Пресеты оптимизации</h1>
+        <p class="section-desc">Готовые наборы твиков. В карточке пресета указано, для какого устройства он предназначен.</p>
+      </div>
+      <div class="presets-grid" id="presetsGrid"></div>
+    </section>
+
+    <div id="categoryTabs"></div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="scriptModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-code" style="color:#3157d2;margin-right:8px;"></i>Сгенерированный скрипт</h3>
+      <button class="modal-close" type="button" onclick="closeModal()" aria-label="Закрыть">
+        <i class="fas fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <pre id="scriptContent"></pre>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" type="button" onclick="copyScript()">
+        <i class="fas fa-copy"></i> Копировать
+      </button>
+      <button class="btn btn-primary" type="button" onclick="downloadScript()">
+        <i class="fas fa-download"></i> Скачать .bat
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const tweaksDB = {
+  power: {
+    title: "Питание и сон ",
+    icon: "fa-battery-three-quarters",
+    desc: "Оптимизация энергопотребления, спящего режима и сна. Для ноутбука это чаще всего даёт наибольший эффект: меньше нагрев, дольше живёт батарея, стабильный сон/пробуждение.",
+    groups: [
+      {
+        name: "Спящий режим и Modern Standby",
+        tweaks: [
+          {
+            id: "pwr_modern_standby_off",
+            name: "Отключить Modern Standby (S0 Low Power Idle)",
+            desc: "Modern Standby (S0) на многих ноутбуках приводит к разряду в рюкзаке и нагреву. Установка PlatformAoAcOverride=0 возвращает классический S3-сон, если его поддерживает железо. Проверьте поддержку: powercfg /a. Этот ключ рекомендуют гайды на TenForums/WindowsForum и MakeUseOf. Требует перезагрузки.",
+            risk: "warning",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power" /v PlatformAoAcOverride /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "pwr_hibernate_off",
+            name: "Отключить гибернацию (удалить hiberfil.sys, освободить место)",
+            desc: "На SSD гибернация почти не нужна и занимает 2–20 ГБ под hiberfil.sys. Выключение через powercfg /hibernate off освобождает место. На ноутбуке с маленьким SSD это особенно полезно. После выключения пропадёт пункт «Гибернация» в меню питания.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'powercfg /hibernate off'
+            ]
+          },
+          {
+            id: "pwr_fast_startup_off",
+            name: "Отключить быстрый запуск (Fast Startup)",
+            desc: "Fast Startup использует гиберфайл и частично не выгружает драйверы при выключении. Это может мешать обновлениям, двойной загрузке и иногда сну. Ключ HiberbootEnabled=0 в HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power (по данным TenForums).",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power" /v HiberbootEnabled /t REG_DWORD /d 0 /f'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Процессор и PCIe энергосбережение",
+        tweaks: [
+          {
+            id: "pwr_pci_link_off",
+            name: "Выключить PCI Express Link State Power Management (Off)",
+            desc: "Отключает энергосбережение линков PCIe. На некоторых ноутбуках это снижает микрофоны/лаги звука и DPC, особенно с внешними звукокартами/док-станциями. Меняется через powercfg для текущей схемы.",
+            risk: "warning",
+            laptop: true,
+            reg: [
+              'powercfg /setacvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ASPM 0',
+              'powercfg /setdcvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ASPM 0',
+              'powercfg /setactive SCHEME_CURRENT'
+            ]
+          },
+          {
+            id: "pwr_processor_idle_disable",
+            name: "Запретить Windows отключать процессор в простое (диск/батарея)",
+            desc: "Устанавливает минимальное состояние процессора C1 в простое. Может снизить задержку ввода и микрофона/аудио, но увеличит энергопотребление. На ноутбуке применять с осторожностью — сократит время от батареи.",
+            risk: "danger",
+            laptop: true,
+            reg: [
+              'powercfg /setacvalueindex SCHEME_CURRENT SUB_PROCESSOR IDLEDISABLE 1',
+              'powercfg /setdcvalueindex SCHEME_CURRENT SUB_PROCESSOR IDLEDISABLE 1',
+              'powercfg /setactive SCHEME_CURRENT'
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  performance: {
+    title: "Производительность",
+    icon: "fa-tachometer-alt",
+    desc: "Оптимизация скорости, памяти и диска. Для ноутбуков это особенно важно на HDD/маленьких SSD.",
+    groups: [
+      {
+        name: "Система и память",
+        tweaks: [
+          {
+            id: "perf_sysmain",
+            name: "Отключить SysMain (SuperFetch)",
+            desc: "На SSD пользы почти нет, может вызывать фоновую активность диска и 100% загрузку. На HDD с 4 ГБ ОЗУ может быть полезен; на ноутбуках с SSD чаще рекомендуется отключать. Также SysMain отвечает за сжатие редко используемой памяти (считается безопасным отключением).",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\SysMain" /v Start /t REG_DWORD /d 4 /f'
+            ]
+          },
+          {
+            id: "perf_bgtasks",
+            name: "Убрать резерв 20% полосы для фоновых служб",
+            desc: "Windows по умолчанию резервирует 20% сети для фоновых задач. На ноутбуке с Wi‑Fi это может быть заметно при torrent/стриминге.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Psched" /v NonBestEffortBandwidth /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "perf_largecache",
+            name: "Увеличить размер системного кэша",
+            desc: "Полезно при 16+ ГБ ОЗУ. На ноутбуках с 8 ГБ может反而 увеличить своппинг — применять с учётом объёма памяти.",
+            risk: "warning",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management" /v LargeSystemCache /t REG_DWORD /d 1 /f'
+            ]
+          },
+          {
+            id: "perf_trim",
+            name: "Включить TRIM для SSD",
+            desc: "Обычно включено по умолчанию (DisableDeleteNotification=0). Убеждается, что TRIM отправляется SSD. На ноутбуках со старыми SSD иногда бывает сброшено.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem" /v DisableDeleteNotification /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "perf_lastaccess",
+            name: "Отключить обновление времени последнего доступа к файлам",
+            desc: "Снижает количество записей на диск, ускоряет работу файловой системы. Для HDD даёт заметный эффект.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'fsutil behavior set DisableLastAccess 1'
+            ]
+          },
+          {
+            id: "perf_8dot3",
+            name: "Отключить генерацию коротких имён 8.3",
+            desc: "Убирает создание имён типа PROGRA~1. Ускоряет создание файлов и уменьшает фрагментацию на HDD.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'fsutil behavior set Disable8dot3 1'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Геймерские оптимизации",
+        tweaks: [
+          {
+            id: "perf_gamedvr",
+            name: "Отключить Game DVR / Game Bar",
+            desc: "Фоновая запись gameplay. Потребляет CPU/GPU даже не в игре. На ноутбуке съедает батарею. Рекомендуется отключать.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v AppCaptureEnabled /t REG_DWORD /d 0 /f',
+              'reg add "HKCU\\System\\GameConfigStore" /v GameDVR_Enabled /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "perf_hags",
+            name: "Включить Hardware-Accelerated GPU Scheduling (HAGS)",
+            desc: "Снижает задержку рендеринга и нагрузку на CPU, если поддерживается драйвером (NVIDIA 451.48+ / AMD 20.5.1+). Работает на большинстве современных ноутбуков.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers" /v HwSchMode /t REG_DWORD /d 2 /f'
+            ]
+          },
+          {
+            id: "perf_fullscreen",
+            name: "Предпочитать полноэкранный режим оптимизации",
+            desc: "Заставляет игры использовать эксклюзивный полный экран вместо Borderless, что снижает задержку.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCU\\SYSTEM\\GameConfigStore" /v GameDVR_FSEBehaviorMode /t REG_DWORD /d 2 /f'
+            ]
+          },
+          {
+            id: "perf_hpet",
+            name: "Удалить useplatformclock (отключить HPET)",
+            desc: "Убирает принудительное использование HPET. На многих ноутбуках снижает DPC-latency и задержку ввода. Команда bcdedit /deletevalue useplatformclock — классическая рекомендация с форумов (Blurbusters, Reddit, геймерские форумы).",
+            risk: "warning",
+            laptop: true,
+            reg: [
+              'bcdedit /deletevalue useplatformclock'
+            ]
+          },
+          {
+            id: "perf_vbx",
+            name: "Отключить все визуальные эффекты (максимальная производительность)",
+            desc: "Убирает анимации, тени, прозрачность. На слабых ноутбуках даёт заметный прирост отклика.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects" /v VisualFXSetting /t REG_DWORD /d 2 /f'
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  privacy: {
+    title: "Приватность",
+    icon: "fa-shield-alt",
+    desc: "Отключение телеметрии, слежки и сбора данных (по аналогии с O&O ShutUp10 и W10Privacy).",
+    groups: [
+      {
+        name: "Телеметрия и диагностика",
+        tweaks: [
+          {
+            id: "priv_telemetry",
+            name: "Минимальный уровень телеметрии (AllowTelemetry=0)",
+            desc: "Ставит сбор данных в «Базовый». Используется во всех крупных твикерах и ShutUp10.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v AllowTelemetry /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "priv_diagtrack",
+            name: "Отключить службу Connected User Experiences and Telemetry (DiagTrack)",
+            desc: "Основная телеметрия. Все списки «безопасных служб» рекомендуют её отключать. На ноутбуке снижает фоновую активность.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\DiagTrack" /v Start /t REG_DWORD /d 4 /f'
+            ]
+          },
+          {
+            id: "priv_dmwappush",
+            name: "Отключить WAP Push Message Routing Service",
+            desc: "Маршрутизация WAP push-сообщений, связана с телеметрией. Не нужна на десктопе/ноутбуке.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\dmwappushservice" /v Start /t REG_DWORD /d 4 /f'
+            ]
+          },
+          {
+            id: "priv_wer",
+            name: "Отключить отчёты об ошибках Windows (WER)",
+            desc: "Убирает диалоговые окна и отправку отчётов о сбоях в Microsoft.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Error Reporting" /v Disabled /t REG_DWORD /d 1 /f'
+            ]
+          },
+          {
+            id: "priv_ceip",
+            name: "Отключить Customer Experience Improvement Program (CEIP)",
+            desc: "Сбор данных об использовании для «улучшения» продуктов. Устаревшая и ненужная функция.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Customer Experience Improvement Program" /v CeipEnabled /t REG_DWORD /d 0 /f'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Отслеживание и реклама",
+        tweaks: [
+          {
+            id: "priv_advertisingid",
+            name: "Отключить рекламный ID",
+            desc: "Убирает персонализированную рекламу в приложениях Windows.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" /v Enabled /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "priv_apptrack",
+            name: "Отключить отслеживание запускаемых приложений",
+            desc: "Windows перестанет записывать историю запуска для рекомендаций в Start Menu.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v Start_TrackProgs /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "priv_contentdelivery",
+            name: "Отключить доставку контента и предложения Microsoft",
+            desc: "Убирает рекламу в Start, уведомлениях и на рабочем столе (рекомендации, «Попробуйте…»).",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager" /v SubscribedContent-338389Enabled /t REG_DWORD /d 0 /f',
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager" /v SubscribedContent-310093Enabled /t REG_DWORD /d 0 /f',
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager" /v SubscribedContent-338388Enabled /t REG_DWORD /d 0 /f',
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager" /v FeatureManagementEnabled /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "priv_feedback",
+            name: "Отключить запросы обратной связи",
+            desc: "Убирает всплывающие окна «Нравится ли вам Windows 10?» и прочие опросы.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Siuf\\Rules" /v NumberOfSIUFInPeriod /t REG_DWORD /d 0 /f',
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v DoNotShowFeedbackNotifications /t REG_DWORD /d 1 /f'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Местоположение, камера, микрофон, Cortana",
+        tweaks: [
+          {
+            id: "priv_location",
+            name: "Отключить определение местоположения",
+            desc: "Запрещает службам и приложениям доступ к геолокации. Можно включить обратно для отдельных приложений.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\LocationAndSensors" /v DisableLocation /t REG_DWORD /d 1 /f'
+            ]
+          },
+          {
+            id: "priv_cortana",
+            name: "Отключить Cortana",
+            desc: "Полностью отключает голосового ассистента. На ноутбуке без микрофона/не использующем голосовой ввод — безопасно.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search" /v AllowCortana /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "priv_websearch",
+            name: "Отключить веб-поиск в меню Пуск",
+            desc: "Убирает интернет-результаты и Bing-поиск. Ускоряет поиск и экономит трафик (важно для мобильного интернета).",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search" /v AllowWebSearch /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "priv_camera",
+            name: "Отключить камеру для всех приложений (полностью)",
+            desc: "Переопределяет настройки приложений и полностью запрещает доступ к камере. Если используете Zoom/Teams — не включайте.",
+            risk: "warning",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\AppPrivacy" /v LetAppsAccessCamera /t REG_DWORD /d 2 /f'
+            ]
+          },
+          {
+            id: "priv_microphone",
+            name: "Отключить микрофон для всех приложений (полностью)",
+            desc: "Полный запрет доступа к микрофону. Кортана, голосовой ввод, мессенджеры перестанут работать. Для ноутбуков с микрофоном — с осторожностью.",
+            risk: "warning",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\AppPrivacy" /v LetAppsAccessMicrophone /t REG_DWORD /d 2 /f'
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  services: {
+    title: "Службы Windows ",
+    icon: "fa-cogs",
+    desc: "Отключение лишних служб. Составлено по проверенным спискам «safe to disable» (GitHub Gist для десктопов/ноутбуков с Wi‑Fi/Bluetooth), с учётом форумов (TenForums, NTLite, WindowsForum). Для ноутбука сохранены WLAN AutoConfig, Bluetooth Support Service, Power, и др. — без них сломается Wi‑Fi/Bluetooth и сон. Критичные для ноутбука службы не включены в список.",
+    groups: [
+      {
+        name: "Телеметрия, диагностика, обновления, доставка",
+        tweaks: [
+          {
+            id: "svc_diagtrack",
+            name: "Connected User Experiences and Telemetry (DiagTrack)",
+            desc: "Основная телеметрия. Во всех списках безопасных к отключению служб. На ноутбуке снижает фоновую активность и нагрев.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config DiagTrack start= disabled'
+            ]
+          },
+          {
+            id: "svc_dmwappush",
+            name: "WAP Push Message Routing Service",
+            desc: "Связана с телеметрией, на ноутбуке не нужна.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config dmwappushservice start= disabled'
+            ]
+          },
+          {
+            id: "svc_dps",
+            name: "Diagnostic Policy Service (DPS)",
+            desc: "Отвечает за диагностику и troubleshoot. Замечание: нужна для powercfg /batteryreport. Если не используете отчёт батареи — можно отключить; иначе поставьте Manual.",
+            risk: "warning",
+            laptop: true,
+            reg: [
+              'sc config DPS start= disabled'
+            ]
+          },
+          {
+            id: "svc_dosvc",
+            name: "Delivery Optimization (DoSvc)",
+            desc: "P2P-раздача обновлений. На ноутбуке с лимитным интернетом полезно отключить; если у вас несколько ПК дома и вы хотите экономить трафик — оставьте.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config DoSvc start= disabled'
+            ]
+          },
+          {
+            id: "svc_waasmedic",
+            name: "Windows Update Medic Service (WaasMedicSvc)",
+            desc: "Служба «лечения» обновлений: сама включает отключенные компоненты обновления. Во многих списках рекомендуется к отключению, но Microsoft может её снова включить через задачи.",
+            risk: "warning",
+            laptop: true,
+            reg: [
+              'sc config WaasMedicSvc start= disabled'
+            ]
+          },
+          {
+            id: "svc_usbwatt",
+            name: "USB Power Delivery (_usbwatt)",
+            desc: "Управление USB Power Delivery. Нужна только для зарядки/переключения USB-C PD. Если не используете PD — можно отключить.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config _usbwatt start= disabled'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Xbox, игры, печать, факс, биометрия, сенсорная панель",
+        tweaks: [
+          {
+            id: "svc_xblauth",
+            name: "XblAuthManager",
+            desc: "Авторизация Xbox Live. На ноутбуке без Xbox/Game Pass — не нужна.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config XblAuthManager start= disabled'
+            ]
+          },
+          {
+            id: "svc_xblgsave",
+            name: "XblGameSave",
+            desc: "Сохранения Xbox в облако. Без Xbox — не нужна.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config XblGameSave start= disabled'
+            ]
+          },
+          {
+            id: "svc_xboxnet",
+            name: "XboxNetApiSvc",
+            desc: "Сетевая служба Xbox. Не нужна без Xbox.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config XboxNetApiSvc start= disabled'
+            ]
+          },
+          {
+            id: "svc_spooler",
+            name: "Print Spooler",
+            desc: "Служба печати. На ноутбуке без принтера можно отключить и экономить ресурсы. Внимание: также отключает «печать в PDF».",
+            risk: "warning",
+            laptop: true,
+            reg: [
+              'sc config Spooler start= disabled'
+            ]
+          },
+          {
+            id: "svc_fax",
+            name: "Fax",
+            desc: "Служба факсов. На 99% ноутбуков не нужна.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config Fax start= disabled'
+            ]
+          },
+          {
+            id: "svc_wbio",
+            name: "Windows Biometric Service",
+            desc: "Нужна для отпечатка пальца и Windows Hello Face. Если используете — НЕ отключайте. Если не используете — можно отключить. Влияет на загрузку настроек « sign-in options».",
+            risk: "warning",
+            laptop: true,
+            reg: [
+              'sc config WbioSrvc start= disabled'
+            ]
+          },
+          {
+            id: "svc_tabletinput",
+            name: "Touch Keyboard and Handwriting Panel Service",
+            desc: "Виртуальная клавиатура/рукописный ввод. Нужна только для сенсорных экранов. На обычном ноутбуке можно отключить, но в Windows 11 она может использоваться Windows Terminal.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config TabletInputService start= disabled'
+            ]
+          },
+          {
+            id: "svc_themes",
+            name: "Themes",
+            desc: "Отключит тему (окна станут «классическими»). НЕ рекомендуется — почти не даёт прироста, но ломает оформление. Добавлено по просьбе «всех служб».",
+            risk: "danger",
+            laptop: true,
+            reg: [
+              'sc config Themes start= disabled'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Сетевые, подключённые устройства, карты, поиск",
+        tweaks: [
+          {
+            id: "svc_lfsvc",
+            name: "Geolocation Service",
+            desc: "Геолокация. Если не используете карты/местоположение — безопасно отключить.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config lfsvc start= disabled'
+            ]
+          },
+          {
+            id: "svc_mapsbroker",
+            name: "Downloaded Maps Manager (MapsBroker)",
+            desc: "Менеджер загруженных карт. Без «Карт» — не нужен. Во многих списках безопасных служб рекомендуется переводить в Manual или отключать.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config MapsBroker start= disabled'
+            ]
+          },
+          {
+            id: "svc_wsearch",
+            name: "Windows Search (индексация)",
+            desc: "Индексация поиска. На SSD поиск и без неё быстрый; отключение уменьшает фоновую активность диска (особенно на HDD). На ноутбуках с маленьким SSD/медленным HDD даёт прирост. Настройки: индекс можно также выключить через свойства диска.",
+            risk: "warning",
+            laptop: true,
+            reg: [
+              'sc config WSearch start= disabled'
+            ]
+          },
+          {
+            id: "svc_pca",
+            name: "Program Compatibility Assistant Service",
+            desc: "Показывает «Эта программа может быть установлена некорректно». Бесполезная и раздражающая служба, в списках безопасных к отключению.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config PcaSvc start= disabled'
+            ]
+          },
+          {
+            id: "svc_cdpuser",
+            name: "Connected Devices Platform User Service",
+            desc: "Участвует в связных устройствах, Night Light и Phones Link. На многих ноутбуках без Phone Link можно отключить, но Night Light может перестать работать.",
+            risk: "warning",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\CDPUserSvc" /v Start /t REG_DWORD /d 4 /f'
+            ]
+          },
+          {
+            id: "svc_dusm",
+            name: "Data Usage (DusmSvc)",
+            desc: "Показывает «Последние 30 дней» в Настройки → Сеть. Отключение не ломает сеть, но этот раздел перестанет работать.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config DusmSvc start= disabled'
+            ]
+          },
+          {
+            id: "svc_rmsvc",
+            name: "Radio Management Service (RmSvc)",
+            desc: "Управляет radios (Wi‑Fi/Bluetooth). На ноутбуке нужно быть осторожным: если отключить — кнопка «В самолёте» и переключение Wi‑Fi/Bluetooth могут перестать работать. Во многих списках стоит как «might be needed for Wi‑Fi and Bluetooth». Без острой необходимости лучше не трогать.",
+            risk: "danger",
+            laptop: true,
+            reg: [
+              'sc config RmSvc start= disabled'
+            ]
+          },
+          {
+            id: "svc_iphlpsvc",
+            name: "IP Helper (iphlpsvc)",
+            desc: "Нужен для IPv6-over-IPv4 туннелей (6to4, ISATAP, Teredo). Если вы не используете IPv6 туннели — можно отключить. На большинстве ноутбуков безопасно, но некоторые корпоративные VPN/сети могут требовать.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config iphlpsvc start= disabled'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Прочие безопасные для отключения ",
+        tweaks: [
+          {
+            id: "svc_remoteregistry",
+            name: "Remote Registry",
+            desc: "Удалённый доступ к реестру. Классическая рекомендация к отключению из соображений безопасности.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config RemoteRegistry start= disabled'
+            ]
+          },
+          {
+            id: "svc_tapisrv",
+            name: "Telephony (TapiSrv)",
+            desc: "Телефония/модем. На большинстве ноутбуков не используется.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config TapiSrv start= disabled'
+            ]
+          },
+          {
+            id: "svc_semsgrsvc",
+            name: "Payments and NFC/SE Manager (SEMgrSvc)",
+            desc: "NFC-платежи. На ноутбуках без NFC — не нужна.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config SEMgrSvc start= disabled'
+            ]
+          },
+          {
+            id: "svc_qwave",
+            name: "Quality Windows Audio Video Experience (QWAVE)",
+            desc: "QoS для AV-потоков. На ноутбуке редко используется и может быть отключено.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config QWAVE start= disabled'
+            ]
+          },
+          {
+            id: "svc_smartcard",
+            name: "Smart Card Device Enumeration Service",
+            desc: "Смарт-карты. Без смарт-карт/ридеров — не нужна.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'sc config ScDeviceEnum start= disabled'
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  network: {
+    title: "Сеть ",
+    icon: "fa-network-wired",
+    desc: "TCP/IP, DNS, Wi‑Fi/Bluetooth нюансы. Для ноутбука особенно важно не сломать беспроводные интерфейсы.",
+    groups: [
+      {
+        name: "TCP/IP и throughput",
+        tweaks: [
+          {
+            id: "net_nagle",
+            name: "Отключить алгоритм Нагла (TCP ACK frequency/TCPNoDelay)",
+            desc: "Убирает буферизацию мелких пакетов (200 мс). Снижает пинг в онлайн-играх. На ноутбуке с Wi‑Fi может немного увеличить нагрузку на сеть.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces" /v TcpAckFrequency /t REG_DWORD /d 1 /f',
+              'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces" /v TCPNoDelay /t REG_DWORD /d 1 /f'
+            ]
+          },
+          {
+            id: "net_rss",
+            name: "Включить RSS (Receive Side Scaling)",
+            desc: "Распределяет обработку входящих пакетов по ядрам. Полезно на многоядерных CPU, которые есть у большинства ноутбуков.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'netsh int tcp set global rss=enabled'
+            ]
+          },
+          {
+            id: "net_networkthrottle",
+            name: "Снять сетевой throttle для мультимедиа (NetworkThrottlingIndex)",
+            desc: "По умолчанию Windows ограничивает мультимедиа-потоки до ~10 Мбит/с. Снятие ограничения полезно для стриминга/онлайн-видео.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile" /v NetworkThrottlingIndex /t REG_DWORD /d 0xffffffff /f'
+            ]
+          },
+          {
+            id: "net_netbios",
+            name: "Отключить NetBIOS over TCP/IP",
+            desc: "Устаревший протокол. Отключение ускоряет разрешение имён и закрывает порт 139.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\NetBT\\Parameters\\Interfaces" /v NetbiosOptions /t REG_DWORD /d 2 /f'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Прокси и автоконфигурация",
+        tweaks: [
+          {
+            id: "net_autoproxy",
+            name: "Отключить автообнаружение прокси (WPAD)",
+            desc: "Windows больше не будет периодически искать WPAD-прокси в сети. Убирает небольшие задержки при запуске некоторых программ на unfamiliar сетях.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Wpad" /v WpadOverride /t REG_DWORD /d 1 /f'
+            ]
+          }
+        ]
+      },
+      {
+        name: "DNS (осторожно — меняет настройки адаптера)",
+        tweaks: [
+          {
+            id: "net_dns_cloudflare",
+            name: "Установить DNS Cloudflare 1.1.1.1 / 1.0.0.1 через netsh (пример для Ethernet)",
+            desc: "Быстрый и приватный DNS. Команда netsh меняет DNS для указанного адаптера. ВНИМАНИЕ: замените «Ethernet» на реальное имя вашего беспроводного/проводного адаптера (см. ipconfig /all). Не сломает Wi‑Fi, но изменит DNS.",
+            risk: "warning",
+            laptop: true,
+            reg: [
+              'netsh interface ip set dns "Ethernet" static 1.1.1.1 primary',
+              'netsh interface ip add dns "Ethernet" 1.0.0.1 index=2',
+              'echo ВНИМАНИЕ: Замените "Ethernet" на имя вашего адаптера (ipconfig /all)'
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  explorer: {
+    title: "Проводник",
+    icon: "fa-folder-open",
+    desc: "Настройки проводника: отображение, быстрый доступ, OneDrive, чистка интерфейса.",
+    groups: [
+      {
+        name: "Отображение файлов",
+        tweaks: [
+          {
+            id: "exp_ext",
+            name: "Показывать расширения файлов",
+            desc: "Отображает .txt, .exe, .jpg и т.д. Повышает безопасность (видно реальный тип файла).",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v HideFileExt /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "exp_hidden",
+            name: "Показывать скрытые файлы",
+            desc: "Делает скрытые файлы/папки видимыми.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v Hidden /t REG_DWORD /d 1 /f'
+            ]
+          },
+          {
+            id: "exp_checkboxes",
+            name: "Убрать галочки для выбора файлов",
+            desc: "Возвращает классическое выделение кликом вместо галочек.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v AutoCheckSelect /t REG_DWORD /d 0 /f'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Навигация и быстрый доступ",
+        tweaks: [
+          {
+            id: "exp_thispc",
+            name: "Открывать «Этот компьютер» вместо «Быстрый доступ»",
+            desc: "Проводник открывается на дисках, а не на недавних файлах.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v LaunchTo /t REG_DWORD /d 1 /f'
+            ]
+          },
+          {
+            id: "exp_recent",
+            name: "Не показывать недавние файлы в быстром доступе",
+            desc: "Убирает список недавно использованных файлов.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer" /v ShowRecent /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "exp_frequent",
+            name: "Не показывать часто используемые папки",
+            desc: "Убирает список часто открываемых папок.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer" /v ShowFrequent /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "exp_onedrive",
+            name: "Убрать OneDrive из проводника",
+            desc: "Скрывает иконку OneDrive в навигации. Не удаляет саму программу.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCR\\CLSID\\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" /v System.IsPinnedToNameSpaceTree /t REG_DWORD /d 0 /f',
+              'reg add "HKCR\\Wow6432Node\\CLSID\\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" /v System.IsPinnedToNameSpaceTree /t REG_DWORD /d 0 /f'
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  updates: {
+    title: "Обновления",
+    icon: "fa-cloud-download-alt",
+    desc: "Контроль обновлений: автоматика, перезагрузки, доставка.",
+    groups: [
+      {
+        name: "Автоматические обновления и перезагрузки",
+        tweaks: [
+          {
+            id: "upd_autoupdate",
+            name: "Отключить автоматические обновления",
+            desc: "Останавливает авто-загрузку/установку. Обновляться придётся вручную. Рекомендуется только продвинутым пользователям.",
+            risk: "danger",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU" /v NoAutoUpdate /t REG_DWORD /d 1 /f'
+            ]
+          },
+          {
+            id: "upd_reboot",
+            name: "Отключить автоматическую перезагрузку после обновлений",
+            desc: "Windows не будет сама перезагружаться для установки обновлений — вы решите сами.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU" /v AlwaysAutoRebootAtScheduledTime /t REG_DWORD /d 0 /f',
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU" /v AUOptions /t REG_DWORD /d 2 /f'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Доставка оптимизации (P2P)",
+        tweaks: [
+          {
+            id: "upd_delivery",
+            name: "Отключить доставку оптимизации (P2P)",
+            desc: "Windows перестанет раздавать загруженные обновления другим ПК. На ноутбуке с мобильным интернетом — обязательно к отключению.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization" /v DODownloadMode /t REG_DWORD /d 0 /f'
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  context: {
+    title: "Контекстное меню",
+    icon: "fa-mouse-pointer",
+    desc: "Очистка и настройка контекстного меню: удаление мусорных пунктов, добавление полезных.",
+    groups: [
+      {
+        name: "Удаление пунктов",
+        tweaks: [
+          {
+            id: "ctx_share",
+            name: "Убрать «Поделиться»",
+            desc: "Удаляет пункт «Поделиться» при клике правой кнопкой на файл.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg delete "HKCR\\Software\\Microsoft\\Windows\\CurrentVersion\\Shell\\Extensions\\ContractId\\Windows.Share.Target" /f'
+            ]
+          },
+          {
+            id: "ctx_sendto",
+            name: "Убрать «Отправить»",
+            desc: "Удаляет подменю «Отправить» (почта, флешка и т.д.).",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg delete "HKCR\\AllFilesystemObjects\\shellex\\ContextMenuHandlers\\SendTo" /f'
+            ]
+          },
+          {
+            id: "ctx_includeinlib",
+            name: "Убрать «Включить в библиотеку»",
+            desc: "Удаляет устаревший пункт библиотек из контекстного меню папок.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg delete "HKCR\\Directory\\Background\\shellex\\ContextMenuHandlers\\LibraryLocation" /f'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Добавление полезных пунктов",
+        tweaks: [
+          {
+            id: "ctx_copypath",
+            name: "Добавить «Копировать путь файла»",
+            desc: "Быстрое копирование полного пути файла/папки в буфер обмена.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCR\\AllFilesystemObjects\\shell\\copypath" /v MUIVerb /t REG_SZ /d "Копировать путь" /f',
+              'reg add "HKCR\\AllFilesystemObjects\\shell\\copypath\\command" /ve /t REG_SZ /d "cmd /c echo %%1 | clip" /f'
+            ]
+          },
+          {
+            id: "ctx_cmdadmin",
+            name: "Добавить «CMD от администратора» здесь",
+            desc: "Открывает командную строку с правами администратора в текущей папке.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCR\\Directory\\Background\\shell\\runas_cmd" /v MUIVerb /t REG_SZ /d "CMD от администратора" /f',
+              'reg add "HKCR\\Directory\\Background\\shell\\runas_cmd" /v Icon /t REG_SZ /d "cmd.exe" /f',
+              'reg add "HKCR\\Directory\\Background\\shell\\runas_cmd\\command" /ve /t REG_SZ /d "cmd /s /k pushd \"%%V\"" /f',
+              'reg add "HKCR\\Directory\\Background\\shell\\runas_cmd" /v HasLUAShield /t REG_SZ /d "" /f'
+            ]
+          },
+          {
+            id: "ctx_classicfull",
+            name: "Полное классическое контекстное меню (без «Показать дополнительные параметры»)",
+            desc: "Показывает сразу все пункты без сокращённого «Windows 10/11» меню.",
+            risk: "safe",
+            laptop: true,
+            reg: [
+              'reg add "HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32" /ve /t REG_SZ /d "" /f'
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  security: {
+    title: "Безопасность",
+    icon: "fa-lock",
+    desc: "Не «отключение защиты», а нормальная база безопасности: UAC, Firewall, SmartScreen, автозапуск, SMBv1 и защита от шифровальщиков. Для обычного ПК это отдельный важный раздел.",
+    groups: [
+      {
+        name: "Базовая защита Windows",
+        tweaks: [
+          {
+            id: "sec_firewall_on",
+            name: "Включить Windows Firewall для всех профилей",
+            desc: "Принудительно включает встроенный брандмауэр для Domain/Private/Public. Полезно после сомнительных сборок Windows или старых твикеров.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              "netsh advfirewall set allprofiles state on"
+            ]
+          },
+          {
+            id: "sec_uac_default",
+            name: "Вернуть UAC в безопасный режим по умолчанию",
+            desc: "Включает UAC, запрос подтверждения для администраторов и Secure Desktop. Это не ускоряет ПК, зато закрывает типичную дыру после «оптимизаторов».",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v EnableLUA /t REG_DWORD /d 1 /f',
+              'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v ConsentPromptBehaviorAdmin /t REG_DWORD /d 5 /f',
+              'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v PromptOnSecureDesktop /t REG_DWORD /d 1 /f'
+            ]
+          },
+          {
+            id: "sec_smartscreen_on",
+            name: "Включить SmartScreen / предупреждение для неизвестных приложений",
+            desc: "Принудительно включает SmartScreen и режим Warn. Нужен для обычного домашнего ПК, где часто скачивают установщики из интернета.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System" /v EnableSmartScreen /t REG_DWORD /d 1 /f',
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System" /v ShellSmartScreenLevel /t REG_SZ /d Warn /f'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Автозапуск и устаревшие протоколы",
+        tweaks: [
+          {
+            id: "sec_disable_autorun",
+            name: "Отключить AutoRun/AutoPlay для всех дисков",
+            desc: "Запрещает автозапуск с флешек, внешних HDD и сетевых дисков. Один из самых безопасных твиков для любых ПК.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer" /v NoDriveTypeAutoRun /t REG_DWORD /d 255 /f',
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer" /v NoDriveTypeAutoRun /t REG_DWORD /d 255 /f'
+            ]
+          },
+          {
+            id: "sec_disable_smb1",
+            name: "Отключить SMBv1",
+            desc: "SMBv1 давно устарел и небезопасен. Не включайте этот твик только если у вас старый NAS/принтер/сканер, который работает только через SMBv1.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'powershell -Command "Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol -NoRestart"'
+            ]
+          },
+          {
+            id: "sec_controlled_folder",
+            name: "Включить Controlled Folder Access (защита от шифровальщиков)",
+            desc: "Защищает пользовательские папки от неразрешённых изменений. Может мешать старым программам и играм — поэтому помечено осторожно.",
+            risk: "warning",
+            devices: ["desktop","laptop"],
+            reg: [
+              'powershell -Command "Set-MpPreference -EnableControlledFolderAccess Enabled"'
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  gaming: {
+    title: "Игры и задержка",
+    icon: "fa-gamepad",
+    desc: "Отдельная игровая зона: GameDVR, приоритет мультимедиа, сетевые задержки, таймеры и полноэкранный режим. На ноутбуке часть твиков может сильнее расходовать батарею.",
+    groups: [
+      {
+        name: "GameDVR, Game Bar и полноэкранный режим",
+        tweaks: [
+          {
+            id: "game_dvr_off",
+            name: "Отключить Xbox Game Bar / GameDVR",
+            desc: "Дублирует игровую оптимизацию из раздела производительности, но вынесено отдельно, чтобы игровой пресет был понятнее.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v AppCaptureEnabled /t REG_DWORD /d 0 /f',
+              'reg add "HKCU\\System\\GameConfigStore" /v GameDVR_Enabled /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "game_fullscreen_opt",
+            name: "Настроить Fullscreen Optimizations под низкую задержку",
+            desc: "Снижает вмешательство GameDVR и заставляет Windows меньше трогать полноэкранные приложения.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKCU\\SYSTEM\\GameConfigStore" /v GameDVR_FSEBehaviorMode /t REG_DWORD /d 2 /f',
+              'reg add "HKCU\\SYSTEM\\GameConfigStore" /v GameDVR_HonorUserFSEBehaviorMode /t REG_DWORD /d 1 /f'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Планировщик и latency",
+        tweaks: [
+          {
+            id: "game_system_responsiveness",
+            name: "Снизить SystemResponsiveness для игр",
+            desc: "Ставит SystemResponsiveness=0 в Multimedia SystemProfile. Может помочь с фреймтаймом, но на рабочих ПК со стримингом/аудио лучше тестировать.",
+            risk: "warning",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile" /v SystemResponsiveness /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "game_priority_games",
+            name: "Повысить приоритет профиля Games в Multimedia",
+            desc: "Ставит высокий приоритет для задач Games. Хорошо для игрового ПК, но не надо считать это магическим FPS-бустом.",
+            risk: "warning",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games" /v "GPU Priority" /t REG_DWORD /d 8 /f',
+              'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games" /v Priority /t REG_DWORD /d 6 /f',
+              'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games" /v "Scheduling Category" /t REG_SZ /d High /f'
+            ]
+          },
+          {
+            id: "game_dynamic_tick",
+            name: "Отключить Dynamic Tick",
+            desc: "Иногда снижает микрофризы и DPC latency, но эффект зависит от железа. На ноутбуке может увеличить расход батареи.",
+            risk: "warning",
+            devices: ["desktop","laptop"],
+            reg: [
+              'bcdedit /set disabledynamictick yes'
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  debloat: {
+    title: "Debloat / Apps",
+    icon: "fa-box-open",
+    desc: "Удаление рекомендаций, рекламных компонентов, Consumer Experience, Copilot/Widgets и лишних автозапусков. Это не удаляет системные компоненты «навсегда», а в основном выключает политики и UI-шум.",
+    groups: [
+      {
+        name: "Реклама, рекомендации, Copilot, Widgets",
+        tweaks: [
+          {
+            id: "deb_consumer_features",
+            name: "Отключить Windows Consumer Features",
+            desc: "Запрещает Windows автоматически предлагать/подставлять потребительские приложения и рекомендации.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent" /v DisableWindowsConsumerFeatures /t REG_DWORD /d 1 /f'
+            ]
+          },
+          {
+            id: "deb_disable_widgets",
+            name: "Отключить Widgets / News and Interests",
+            desc: "Скрывает виджеты и новости. На слабом ПК убирает один из лишних фоновых компонентов.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Dsh" /v AllowNewsAndInterests /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "deb_disable_copilot",
+            name: "Отключить Windows Copilot",
+            desc: "Выключает Copilot политикой и скрывает кнопку на панели задач, если она есть в вашей версии Windows.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v ShowCopilotButton /t REG_DWORD /d 0 /f',
+              'reg add "HKCU\\Software\\Policies\\Microsoft\\Windows\\WindowsCopilot" /v TurnOffWindowsCopilot /t REG_DWORD /d 1 /f',
+              'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsCopilot" /v TurnOffWindowsCopilot /t REG_DWORD /d 1 /f'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Предложения и фоновые приложения",
+        tweaks: [
+          {
+            id: "deb_silent_installed_apps",
+            name: "Запретить тихую установку рекомендованных приложений",
+            desc: "Отключает SilentInstalledAppsEnabled и похожие ContentDelivery-флаги.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager" /v SilentInstalledAppsEnabled /t REG_DWORD /d 0 /f',
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager" /v OemPreInstalledAppsEnabled /t REG_DWORD /d 0 /f',
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager" /v PreInstalledAppsEnabled /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "deb_teams_autostart",
+            name: "Отключить автозапуск Teams/Chat",
+            desc: "Убирает автозагрузку Teams/Chat для текущего пользователя. Не удаляет программу.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg delete "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v com.squirrel.Teams.Teams /f',
+              'reg delete "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v Teams /f'
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  storage: {
+    title: "Диск и очистка",
+    icon: "fa-hard-drive",
+    desc: "SSD/HDD, TRIM, временные файлы, Storage Sense, быстрый запуск и отчёты. Для ПК и ноутбука раздел одинаково полезен, но на ноутбуке чаще помогает освободить место.",
+    groups: [
+      {
+        name: "SSD/HDD и файловая система",
+        tweaks: [
+          {
+            id: "stor_trim_on",
+            name: "Убедиться, что TRIM включён",
+            desc: "То же действие, что в разделе производительности, но в более логичном месте для диска.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'fsutil behavior set DisableDeleteNotification 0'
+            ]
+          },
+          {
+            id: "stor_storage_sense_on",
+            name: "Включить Storage Sense",
+            desc: "Включает автоматическую очистку временных файлов через Storage Sense для текущего пользователя.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\StorageSense\\Parameters\\StoragePolicy" /v 01 /t REG_DWORD /d 1 /f'
+            ]
+          },
+          {
+            id: "stor_last_access_off",
+            name: "Отключить запись Last Access Time",
+            desc: "Снижает количество лишних записей в NTFS. Особенно полезно на HDD и старых SSD.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'fsutil behavior set DisableLastAccess 1'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Очистка мусора",
+        tweaks: [
+          {
+            id: "stor_temp_clean",
+            name: "Очистить временные папки пользователя и Windows",
+            desc: "Добавляет команды удаления временных файлов. Файлы, которые сейчас используются, Windows пропустит.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'del /q /f /s "%TEMP%\\*"',
+              'del /q /f /s "C:\\Windows\\Temp\\*"'
+            ]
+          },
+          {
+            id: "stor_component_cleanup",
+            name: "Очистить хранилище компонентов WinSxS",
+            desc: "Запускает DISM StartComponentCleanup. Обычно безопасно, но может занять время.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'Dism.exe /online /Cleanup-Image /StartComponentCleanup'
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  ui: {
+    title: "Интерфейс",
+    icon: "fa-window-maximize",
+    desc: "Панель задач, Explorer, уведомления, анимации, тёмная тема и визуальная чистота Windows. Это не стиль самого приложения, а твики интерфейса Windows.",
+    groups: [
+      {
+        name: "Панель задач и системный UI",
+        tweaks: [
+          {
+            id: "ui_taskbar_left",
+            name: "Панель задач Windows 11 слева",
+            desc: "Ставит TaskbarAl=0. Работает в Windows 11; в Windows 10 просто не повредит.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v TaskbarAl /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "ui_show_seconds",
+            name: "Показывать секунды в системных часах",
+            desc: "Удобно для админов и тех, кто часто смотрит точное время. Может немного повышать активность Explorer на очень слабых ПК.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v ShowSecondsInSystemClock /t REG_DWORD /d 1 /f'
+            ]
+          },
+          {
+            id: "ui_dark_mode",
+            name: "Включить тёмную тему приложений и системы",
+            desc: "Включает тёмную тему Windows для приложений и системных элементов.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v AppsUseLightTheme /t REG_DWORD /d 0 /f',
+              'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v SystemUsesLightTheme /t REG_DWORD /d 0 /f'
+            ]
+          }
+        ]
+      },
+      {
+        name: "Уведомления и подсказки",
+        tweaks: [
+          {
+            id: "ui_disable_tips",
+            name: "Отключить советы, подсказки и Welcome Experience",
+            desc: "Убирает лишние подсказки Windows после обновлений и при обычной работе.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager" /v SoftLandingEnabled /t REG_DWORD /d 0 /f',
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager" /v SubscribedContent-310093Enabled /t REG_DWORD /d 0 /f',
+              'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager" /v SubscribedContent-338389Enabled /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "ui_animation_off",
+            name: "Отключить анимации Windows",
+            desc: "Повышает ощущение скорости на слабых ПК и ноутбуках.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKCU\\Control Panel\\Desktop\\WindowMetrics" /v MinAnimate /t REG_SZ /d 0 /f',
+              'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects" /v VisualFXSetting /t REG_DWORD /d 2 /f'
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  startup: {
+    title: "Автозагрузка",
+    icon: "fa-rocket",
+    desc: "Ускорение старта системы: задержка автозагрузки, фоновые приложения, задачи и очистка пользовательских автозапусков без удаления программ.",
+    groups: [
+      {
+        name: "Загрузка Explorer и фон",
+        tweaks: [
+          {
+            id: "start_disable_delay",
+            name: "Отключить задержку автозагрузки",
+            desc: "Создаёт StartupDelayInMSec=0. Программы из автозагрузки стартуют быстрее после входа в систему.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize" /v StartupDelayInMSec /t REG_DWORD /d 0 /f'
+            ]
+          },
+          {
+            id: "start_bg_apps_off",
+            name: "Отключить фоновые приложения для текущего пользователя",
+            desc: "Запрещает UWP-приложениям работать в фоне. Может повлиять на уведомления Microsoft Store-приложений.",
+            risk: "warning",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications" /v GlobalUserDisabled /t REG_DWORD /d 1 /f'
+            ]
+          },
+          {
+            id: "start_restart_apps_off",
+            name: "Не перезапускать приложения после входа",
+            desc: "Отключает автоматическое восстановление некоторых приложений после перезагрузки/выхода.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              'reg add "HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon" /v RestartApps /t REG_DWORD /d 0 /f'
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  maintenance: {
+    title: "Обслуживание",
+    icon: "fa-screwdriver-wrench",
+    desc: "Не совсем твики, а полезные сервисные команды: проверка целостности Windows, DISM, battery report для ноутбука и сброс сетевого стека.",
+    groups: [
+      {
+        name: "Проверка и ремонт Windows",
+        tweaks: [
+          {
+            id: "mnt_sfc",
+            name: "Запустить SFC /scannow",
+            desc: "Проверяет системные файлы Windows и пытается восстановить повреждённые.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              "sfc /scannow"
+            ]
+          },
+          {
+            id: "mnt_dism_restore",
+            name: "DISM RestoreHealth",
+            desc: "Проверяет и восстанавливает образ Windows. Может занимать долго и требует интернет/локальный источник.",
+            risk: "safe",
+            devices: ["desktop","laptop"],
+            reg: [
+              "DISM /Online /Cleanup-Image /RestoreHealth"
+            ]
+          },
+          {
+            id: "mnt_net_reset",
+            name: "Сбросить Winsock и TCP/IP",
+            desc: "Помогает после VPN, прокси, кривых драйверов и сетевых ошибок. После применения нужна перезагрузка.",
+            risk: "warning",
+            devices: ["desktop","laptop"],
+            reg: [
+              "netsh winsock reset",
+              "netsh int ip reset"
+            ]
+          }
+        ]
+      },
+      {
+        name: "Ноутбук: диагностика батареи",
+        tweaks: [
+          {
+            id: "mnt_battery_report",
+            name: "Создать battery-report на рабочем столе",
+            desc: "Отчёт powercfg /batteryreport с историей ёмкости и циклов. Показывается только в профиле ноутбука.",
+            risk: "safe",
+            devices: ["laptop"],
+            reg: [
+              'powercfg /batteryreport /output "%USERPROFILE%\\Desktop\\battery-report.html"'
+            ]
+          },
+          {
+            id: "mnt_sleepstudy",
+            name: "Создать sleepstudy-отчёт",
+            desc: "Полезно, если ноутбук греется или разряжается во сне. Команда работает на устройствах с поддержкой Modern Standby.",
+            risk: "safe",
+            devices: ["laptop"],
+            reg: [
+              'powercfg /sleepstudy /output "%USERPROFILE%\\Desktop\\sleepstudy.html"'
+            ]
+          }
+        ]
+      }
+    ]
+  }
+};
+
+const presets = [
+  {
+    id: "preset_desktop_safe",
+    name: "ПК: безопасная основа",
+    desc: "Базовый набор для обычного компьютера: приватность, проводник, безопасность, чистый UI, сеть и безопасные службы. Не трогает рискованные параметры.",
+    icon: "fa-desktop",
+    color: "var(--accent-strong)",
+    bg: "rgba(255,255,255,0.10)",
+    devices: ["desktop"],
+    mode: "safe"
+  },
+  {
+    id: "preset_desktop_gaming",
+    name: "ПК: игры и низкая задержка",
+    desc: "GameDVR, Fullscreen, HAGS, сетевые и multimedia-твики. Подходит для игрового стационарного ПК, но жёлтые пункты лучше тестировать.",
+    icon: "fa-gamepad",
+    color: "#ffca6a",
+    bg: "var(--warning-dim)",
+    devices: ["desktop"],
+    tweaks: ["perf_gamedvr","perf_hags","perf_fullscreen","game_dvr_off","game_fullscreen_opt","game_system_responsiveness","game_priority_games","net_nagle","net_rss","net_networkthrottle","pwr_pci_link_off","perf_trim","stor_trim_on"]
+  },
+  {
+    id: "preset_desktop_privacy",
+    name: "ПК: приватность + debloat",
+    desc: "Телеметрия, реклама, Content Delivery, Copilot/Widgets, Cortana, веб-поиск и лишние предложения Microsoft.",
+    icon: "fa-user-secret",
+    color: "#9ec5ff",
+    bg: "var(--info-dim)",
+    devices: ["desktop"],
+    tweaks: ["priv_telemetry","priv_diagtrack","priv_dmwappush","priv_wer","priv_ceip","priv_advertisingid","priv_apptrack","priv_contentdelivery","priv_feedback","priv_cortana","priv_websearch","deb_consumer_features","deb_disable_widgets","deb_disable_copilot","deb_silent_installed_apps","upd_delivery"]
+  },
+  {
+    id: "preset_desktop_clean",
+    name: "ПК: чистый интерфейс",
+    desc: "Проводник, классическое контекстное меню, тёмная тема, отключение советов/анимаций и скрытие OneDrive/Copilot/Widgets.",
+    icon: "fa-window-maximize",
+    color: "#ffffff",
+    bg: "rgba(255,255,255,0.08)",
+    devices: ["desktop","laptop"],
+    tweaks: ["exp_ext","exp_hidden","exp_thispc","exp_recent","exp_frequent","exp_onedrive","ctx_classicfull","ctx_copypath","ui_dark_mode","ui_disable_tips","ui_animation_off","deb_disable_widgets","deb_disable_copilot"]
+  },
+  {
+    id: "preset_laptop_safe",
+    name: "Ноутбук: безопасная основа",
+    desc: "Безопасные твики для ноутбука: сохраняет Wi‑Fi, Bluetooth, сон, камеру/микрофон и нормальную работу батареи.",
+    icon: "fa-laptop",
+    color: "var(--accent-strong)",
+    bg: "rgba(255,255,255,0.10)",
+    devices: ["laptop"],
+    mode: "safe"
+  },
+  {
+    id: "preset_laptop_battery",
+    name: "Ноутбук: батарея и тишина",
+    desc: "Меньше фоновой активности, рекламы, Xbox, индексации и P2P-доставки обновлений. Не отключает критичные беспроводные службы.",
+    icon: "fa-battery-full",
+    color: "#9cffc7",
+    bg: "rgba(156,255,199,0.10)",
+    devices: ["laptop"],
+    tweaks: ["pwr_fast_startup_off","perf_vbx","svc_diagtrack","svc_dmwappush","svc_dosvc","svc_xblauth","svc_xblgsave","svc_xboxnet","svc_fax","svc_lfsvc","svc_mapsbroker","svc_wsearch","svc_pca","svc_dusm","svc_qwave","svc_smartcard","upd_delivery","priv_telemetry","priv_contentdelivery","deb_disable_widgets","deb_silent_installed_apps","ui_disable_tips","mnt_battery_report"]
+  },
+  {
+    id: "preset_laptop_perf",
+    name: "Ноутбук: производительность от сети",
+    desc: "Производительность и игры для ноутбука от зарядки. Некоторые пункты могут сократить время от батареи.",
+    icon: "fa-bolt",
+    color: "#ffca6a",
+    bg: "var(--warning-dim)",
+    devices: ["laptop"],
+    tweaks: ["perf_sysmain","perf_gamedvr","perf_hags","perf_fullscreen","game_dvr_off","game_fullscreen_opt","perf_vbx","perf_bgtasks","perf_trim","stor_trim_on","pwr_fast_startup_off","net_nagle","net_rss","net_networkthrottle","svc_diagtrack","svc_dmwappush","svc_dosvc","svc_xblauth","svc_xblgsave","svc_xboxnet","svc_pca","svc_fax","svc_lfsvc","svc_mapsbroker","svc_remoteregistry","svc_tapisrv","svc_qwave","svc_smartcard"]
+  },
+  {
+    id: "preset_security_base",
+    name: "Безопасность: вернуть защиту",
+    desc: "Firewall, UAC, SmartScreen, запрет AutoRun и SMBv1. Полезно после старых сборок Windows и агрессивных твикеров.",
+    icon: "fa-lock",
+    color: "#9cffc7",
+    bg: "rgba(156,255,199,0.10)",
+    devices: ["desktop","laptop"],
+    tweaks: ["sec_firewall_on","sec_uac_default","sec_smartscreen_on","sec_disable_autorun","sec_disable_smb1","exp_ext"]
+  }
+];
+
+presets.push(...[
+  {
+    "id": "preset_useful_tools",
+    "name": "Полезные утилиты после чистой Windows",
+    "desc": "PowerToys, Everything, 7-Zip, HWiNFO, CrystalDiskInfo, QuickLook и EarTrumpet через winget.",
+    "icon": "fa-toolbox",
+    "devices": [
+      "desktop",
+      "laptop"
+    ],
+    "tweaks": [
+      "winget_source_update",
+      "winget_powertoys",
+      "winget_everything",
+      "winget_7zip",
+      "winget_hwinfo",
+      "winget_crystaldiskinfo",
+      "winget_quicklook",
+      "winget_eartrumpet"
+    ]
+  },
+  {
+    "id": "preset_reports_all",
+    "name": "Диагностические отчёты",
+    "desc": "Собирает отчёты о системе, драйверах, сети, дисках, DirectX и журналах Windows на рабочий стол.",
+    "icon": "fa-file-lines",
+    "devices": [
+      "desktop",
+      "laptop"
+    ],
+    "tweaks": [
+      "diag_systeminfo",
+      "diag_driverquery",
+      "diag_dxdiag",
+      "diag_ipconfig_all",
+      "diag_chkdsk_scan",
+      "diag_disk_status",
+      "diag_event_system_export",
+      "diag_event_app_export"
+    ]
+  },
+  {
+    "id": "preset_audio_latency",
+    "name": "Аудио и DPC latency",
+    "desc": "Мягкий набор для проверки звука: отчёты, панель звука, отключение ducking и советы по LatencyMon.",
+    "icon": "fa-wave-square",
+    "devices": [
+      "desktop",
+      "laptop"
+    ],
+    "tweaks": [
+      "aud_user_ducking_off",
+      "aud_show_sound_panel",
+      "aud_open_volume_mixer",
+      "aud_latency_advice",
+      "diag_driverquery",
+      "winget_latency_mon"
+    ]
+  },
+  {
+    "id": "preset_backup_before_tuning",
+    "name": "Бэкап перед твиками",
+    "desc": "Создаёт точку восстановления, экспортирует часть реестра, драйверы и списки настроек перед экспериментами.",
+    "icon": "fa-life-ring",
+    "devices": [
+      "desktop",
+      "laptop"
+    ],
+    "tweaks": [
+      "bak_create_restore_point",
+      "bak_export_hkcu",
+      "bak_export_explorer",
+      "bak_export_drivers",
+      "bak_export_power_schemes",
+      "diag_systeminfo"
+    ]
+  }
+]);
+
+const extraTweaksDB = {
+  "quality": {
+    "title": "Качество жизни",
+    "icon": "fa-sparkles",
+    "desc": "Мелкие удобства Windows, которые не дают огромного прироста FPS, но делают систему быстрее на ощущение и приятнее в ежедневной работе.",
+    "groups": [
+      {
+        "name": "Панель задач, часы и окна",
+        "tweaks": [
+          {
+            "id": "ql_clipboard_history_on",
+            "name": "Включить историю буфера обмена Win+V",
+            "desc": "Полезная функция Windows: хранит последние скопированные фрагменты и вставляется через Win+V. Не ускоряет систему, но сильно экономит время при работе с текстом, кодами и ссылками.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKCU\\Software\\Microsoft\\Clipboard\" /v EnableClipboardHistory /t REG_DWORD /d 1 /f"
+            ]
+          },
+          {
+            "id": "ql_tray_seconds_on",
+            "name": "Показывать секунды в системных часах",
+            "desc": "Добавляет секунды в часы панели задач. Полезно для тестов, логов, стриминга и синхронизации действий. На очень слабых ПК может чуть чаще обновлять оболочку, но обычно это незаметно.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\" /v ShowSecondsInSystemClock /t REG_DWORD /d 1 /f"
+            ]
+          },
+          {
+            "id": "ql_last_active_click",
+            "name": "Клик по группе открывает последнее активное окно",
+            "desc": "Если у приложения несколько окон, первый клик по кнопке на панели задач сразу открывает последнее активное окно, а не показывает превью. Удобно для браузера, проводника и IDE.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\" /v LastActiveClick /t REG_DWORD /d 1 /f"
+            ]
+          },
+          {
+            "id": "ql_disable_window_shake",
+            "name": "Отключить Aero Shake",
+            "desc": "Отключает сворачивание всех окон при случайном трясе активного окна мышкой. Часто мешает на рабочих ПК и ноутбуках с тачпадом.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\" /v DisallowShaking /t REG_DWORD /d 1 /f"
+            ]
+          },
+          {
+            "id": "ql_verbose_status",
+            "name": "Показывать подробные сообщения при входе и выключении",
+            "desc": "Windows будет писать более понятные статусы при входе/выключении: какие службы запускаются, что именно подвисло. Полезно для диагностики долгой загрузки.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\" /v VerboseStatus /t REG_DWORD /d 1 /f"
+            ]
+          },
+          {
+            "id": "ql_disable_low_disk_warn",
+            "name": "Отключить назойливые предупреждения о малом месте",
+            "desc": "Убирает всплывающие уведомления Windows о нехватке места. Не освобождает диск — только убирает предупреждения, поэтому лучше использовать вместе с очисткой диска.",
+            "risk": "warning",
+            "reg": [
+              "reg add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\" /v NoLowDiskSpaceChecks /t REG_DWORD /d 1 /f"
+            ]
+          },
+          {
+            "id": "ql_numlock_on",
+            "name": "Включать NumLock при входе",
+            "desc": "Полезно для полноразмерных клавиатур: NumLock будет включаться при входе в систему. На некоторых ноутбуках с Fn-раскладкой может быть неудобно.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKU\\.DEFAULT\\Control Panel\\Keyboard\" /v InitialKeyboardIndicators /t REG_SZ /d 2 /f"
+            ]
+          },
+          {
+            "id": "ql_restart_explorer",
+            "name": "Перезапустить проводник после применения UI-твиков",
+            "desc": "Многие настройки интерфейса применяются только после перезапуска Explorer. Этот пункт аккуратно перезапускает оболочку без полной перезагрузки ПК.",
+            "risk": "safe",
+            "reg": [
+              "taskkill /f /im explorer.exe",
+              "start explorer.exe"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Файлы и быстрые переходы",
+        "tweaks": [
+          {
+            "id": "ql_create_tools_folder",
+            "name": "Создать папку Tools на рабочем столе",
+            "desc": "Создаёт отдельную папку для утилит, отчётов, драйверов и скриптов. Удобно, чтобы не разбрасывать всё по загрузкам.",
+            "risk": "safe",
+            "reg": [
+              "mkdir \"%USERPROFILE%\\Desktop\\Tools\" 2>nul"
+            ]
+          },
+          {
+            "id": "ql_open_startup_folder",
+            "name": "Открыть папку автозагрузки пользователя",
+            "desc": "Открывает shell:startup. Это быстрый способ вручную проверить, что запускается вместе с Windows без входа в диспетчер задач.",
+            "risk": "safe",
+            "reg": [
+              "start shell:startup"
+            ]
+          },
+          {
+            "id": "ql_open_common_startup",
+            "name": "Открыть общую папку автозагрузки",
+            "desc": "Открывает общую автозагрузку для всех пользователей. Полезно, когда программа стартует у всех аккаунтов, а не только у текущего пользователя.",
+            "risk": "safe",
+            "reg": [
+              "start shell:common startup"
+            ]
+          },
+          {
+            "id": "ql_godmode_folder",
+            "name": "Создать папку GodMode на рабочем столе",
+            "desc": "Создаёт папку со сводным списком классических настроек Windows. Нишевый, но удобный способ быстро добраться до старых панелей управления.",
+            "risk": "safe",
+            "reg": [
+              "mkdir \"%USERPROFILE%\\Desktop\\GodMode.{ED7BA470-8E54-465E-825C-99712043E01C}\" 2>nul"
+            ]
+          },
+          {
+            "id": "ql_control_panel_desktop",
+            "name": "Создать ярлык классической Панели управления",
+            "desc": "Классическая панель управления всё ещё часто быстрее современных настроек, особенно для звука, электропитания, устройств и сети.",
+            "risk": "safe",
+            "reg": [
+              "powershell -NoProfile -Command \"$s=(New-Object -ComObject WScript.Shell).CreateShortcut(\"$env:USERPROFILE\\Desktop\\Control Panel.lnk\");$s.TargetPath=\"control.exe\";$s.Save()\""
+            ]
+          },
+          {
+            "id": "ql_system_properties_shortcut",
+            "name": "Создать ярлык свойств системы",
+            "desc": "Создаёт ярлык sysdm.cpl. Через него удобно открыть переменные среды, защиту системы, профиль производительности и удалённый доступ.",
+            "risk": "safe",
+            "reg": [
+              "powershell -NoProfile -Command \"$s=(New-Object -ComObject WScript.Shell).CreateShortcut(\"$env:USERPROFILE\\Desktop\\System Properties.lnk\");$s.TargetPath=\"sysdm.cpl\";$s.Save()\""
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostics": {
+    "title": "Диагностика и отчёты",
+    "icon": "fa-chart-line",
+    "desc": "Команды, которые создают отчёты на рабочем столе. Это не твики на скорость, а быстрый способ понять, что происходит с системой, драйверами, сетью, питанием и диском.",
+    "groups": [
+      {
+        "name": "Система и драйверы",
+        "tweaks": [
+          {
+            "id": "diag_systeminfo",
+            "name": "Сохранить полный отчёт systeminfo",
+            "desc": "Создаёт текстовый отчёт с версией Windows, датой установки, памятью, хотфиксами и базовой информацией о железе. Полезно перед любыми твиками.",
+            "risk": "safe",
+            "reg": [
+              "systeminfo > \"%USERPROFILE%\\Desktop\\systeminfo.txt\""
+            ]
+          },
+          {
+            "id": "diag_driverquery",
+            "name": "Сохранить список драйверов",
+            "desc": "Показывает установленные драйверы, модули и даты. Помогает найти старые или подозрительные драйверы после переезда системы.",
+            "risk": "safe",
+            "reg": [
+              "driverquery /v /fo csv > \"%USERPROFILE%\\Desktop\\drivers.csv\""
+            ]
+          },
+          {
+            "id": "diag_dxdiag",
+            "name": "Сохранить DxDiag",
+            "desc": "Создаёт dxdiag.txt с информацией о DirectX, видеокарте, звуке и драйверах. Очень полезно для игр, OBS и проблем с графикой.",
+            "risk": "safe",
+            "reg": [
+              "dxdiag /t \"%USERPROFILE%\\Desktop\\dxdiag.txt\""
+            ]
+          },
+          {
+            "id": "diag_msinfo",
+            "name": "Сохранить MSInfo32",
+            "desc": "Создаёт расширенный отчёт msinfo32. Он тяжелее, но часто помогает поддержке понять конфликты драйверов, службы и устройства.",
+            "risk": "safe",
+            "reg": [
+              "msinfo32 /report \"%USERPROFILE%\\Desktop\\msinfo32.txt\""
+            ]
+          },
+          {
+            "id": "diag_installed_apps",
+            "name": "Сохранить список установленных программ",
+            "desc": "Выгружает список программ из реестра в текстовый файл. Удобно перед переустановкой Windows или чисткой лишнего софта.",
+            "risk": "safe",
+            "reg": [
+              "powershell -NoProfile -Command \"Get-ItemProperty HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*,HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* | Select DisplayName,DisplayVersion,Publisher,InstallDate | Sort DisplayName | Out-File $env:USERPROFILE\\Desktop\\installed-apps.txt\""
+            ]
+          },
+          {
+            "id": "diag_startup_list",
+            "name": "Сохранить список автозагрузки",
+            "desc": "Показывает, какие элементы стартуют вместе с Windows. Хороший первый шаг, если система долго загружается.",
+            "risk": "safe",
+            "reg": [
+              "wmic startup get Caption,Command,Location,User > \"%USERPROFILE%\\Desktop\\startup-list.txt\""
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Сеть и питание",
+        "tweaks": [
+          {
+            "id": "diag_ipconfig_all",
+            "name": "Сохранить ipconfig /all",
+            "desc": "Выгружает полную сетевую конфигурацию: адаптеры, DNS, шлюз, DHCP, MAC. Нужно для диагностики интернета, VPN, DNS и прокси.",
+            "risk": "safe",
+            "reg": [
+              "ipconfig /all > \"%USERPROFILE%\\Desktop\\ipconfig-all.txt\""
+            ]
+          },
+          {
+            "id": "diag_netstat",
+            "name": "Сохранить список сетевых соединений",
+            "desc": "Сохраняет активные соединения и процессы. Полезно, если нужно понять, какая программа держит сеть или порт.",
+            "risk": "safe",
+            "reg": [
+              "netstat -abno > \"%USERPROFILE%\\Desktop\\netstat.txt\""
+            ]
+          },
+          {
+            "id": "diag_wlan_report",
+            "name": "Создать WLAN report",
+            "desc": "Создаёт HTML-отчёт по Wi‑Fi: подключения, ошибки, обрывы, уровень сигнала. Особенно полезно для ноутбуков и USB Wi‑Fi адаптеров.",
+            "risk": "safe",
+            "reg": [
+              "netsh wlan show wlanreport"
+            ]
+          },
+          {
+            "id": "diag_power_available_sleep",
+            "name": "Сохранить powercfg /a",
+            "desc": "Показывает, какие режимы сна поддерживает железо: S3, Modern Standby, гибернация. Нужный отчёт перед любыми твиками сна.",
+            "risk": "safe",
+            "reg": [
+              "powercfg /a > \"%USERPROFILE%\\Desktop\\powercfg-a.txt\""
+            ]
+          },
+          {
+            "id": "diag_energy_report",
+            "name": "Создать energy report",
+            "desc": "Анализирует настройки питания, драйверы и устройства, которые мешают энергосбережению. Отчёт появится на рабочем столе.",
+            "risk": "safe",
+            "reg": [
+              "powercfg /energy /output \"%USERPROFILE%\\Desktop\\energy-report.html\""
+            ]
+          },
+          {
+            "id": "diag_battery_report_extra",
+            "name": "Создать battery report",
+            "desc": "Создаёт отчёт батареи: износ, циклы, история зарядов и ёмкость. Имеет смысл только на ноутбуке или планшете Windows.",
+            "risk": "safe",
+            "reg": [
+              "powercfg /batteryreport /output \"%USERPROFILE%\\Desktop\\battery-report.html\""
+            ],
+            "devices": [
+              "laptop"
+            ]
+          },
+          {
+            "id": "diag_sleepstudy_extra",
+            "name": "Создать sleepstudy report",
+            "desc": "Показывает, что разряжает устройство во сне/Modern Standby. Очень полезно, если ноутбук греется или садится в рюкзаке.",
+            "risk": "safe",
+            "reg": [
+              "powercfg /sleepstudy /output \"%USERPROFILE%\\Desktop\\sleepstudy.html\""
+            ],
+            "devices": [
+              "laptop"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Диск и целостность",
+        "tweaks": [
+          {
+            "id": "diag_chkdsk_scan",
+            "name": "Проверить диск без перезагрузки",
+            "desc": "Запускает онлайн-проверку C:. Это не форматирование и не исправление вслепую, а безопасный scan текущего состояния файловой системы.",
+            "risk": "safe",
+            "reg": [
+              "chkdsk C: /scan"
+            ]
+          },
+          {
+            "id": "diag_disk_status",
+            "name": "Сохранить SMART-статус через WMIC",
+            "desc": "Быстрый базовый статус дисков. Не заменяет CrystalDiskInfo, но помогает понять, видит ли Windows явные проблемы.",
+            "risk": "safe",
+            "reg": [
+              "wmic diskdrive get model,status,serialnumber,size > \"%USERPROFILE%\\Desktop\\disk-status.txt\""
+            ]
+          },
+          {
+            "id": "diag_dism_scanhealth",
+            "name": "DISM ScanHealth",
+            "desc": "Проверяет хранилище компонентов Windows на повреждения. Ничего не исправляет, только сканирует.",
+            "risk": "safe",
+            "reg": [
+              "DISM /Online /Cleanup-Image /ScanHealth"
+            ]
+          },
+          {
+            "id": "diag_sfc_verifyonly",
+            "name": "SFC verifyonly",
+            "desc": "Проверяет системные файлы без автоматического исправления. Хороший вариант, если сначала хочется просто увидеть факт повреждений.",
+            "risk": "safe",
+            "reg": [
+              "sfc /verifyonly"
+            ]
+          },
+          {
+            "id": "diag_event_system_export",
+            "name": "Экспортировать журнал System",
+            "desc": "Сохраняет системный журнал Windows на рабочий стол. Полезно для поддержки, синих экранов, ошибок диска и драйверов.",
+            "risk": "safe",
+            "reg": [
+              "wevtutil epl System \"%USERPROFILE%\\Desktop\\System.evtx\""
+            ]
+          },
+          {
+            "id": "diag_event_app_export",
+            "name": "Экспортировать журнал Application",
+            "desc": "Сохраняет журнал приложений. Помогает искать падения программ, .NET ошибки и проблемы служб.",
+            "risk": "safe",
+            "reg": [
+              "wevtutil epl Application \"%USERPROFILE%\\Desktop\\Application.evtx\""
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "installers": {
+    "title": "Установка полезных утилит",
+    "icon": "fa-download",
+    "desc": "Опциональные установки через winget. Это не системные твики, а быстрые команды для нормального набора утилит после чистой Windows. Перед применением проверьте, что winget установлен.",
+    "groups": [
+      {
+        "name": "База после чистой Windows",
+        "tweaks": [
+          {
+            "id": "winget_source_update",
+            "name": "Обновить источники winget",
+            "desc": "Обновляет каталог приложений winget. Стоит запускать перед установкой программ, чтобы Windows видела актуальные версии.",
+            "risk": "safe",
+            "reg": [
+              "winget source update"
+            ]
+          },
+          {
+            "id": "winget_upgrade_all",
+            "name": "Обновить все приложения через winget",
+            "desc": "Запускает обновление всех приложений, которые winget умеет обновлять. Лучше смотреть вывод, потому что некоторые установщики могут задавать вопросы.",
+            "risk": "warning",
+            "reg": [
+              "winget upgrade --all --include-unknown"
+            ]
+          },
+          {
+            "id": "winget_terminal",
+            "name": "Установить Windows Terminal",
+            "desc": "Современный терминал Microsoft для PowerShell, CMD, WSL и SSH. Удобнее стандартной консоли.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id Microsoft.WindowsTerminal -e"
+            ]
+          },
+          {
+            "id": "winget_powertoys",
+            "name": "Установить Microsoft PowerToys",
+            "desc": "Набор полезных утилит: FancyZones, Always On Top, PowerRename, Color Picker, Keyboard Manager и многое другое.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id Microsoft.PowerToys -e"
+            ]
+          },
+          {
+            "id": "winget_7zip",
+            "name": "Установить 7-Zip",
+            "desc": "Лёгкий архиватор без лишней рекламы. Часто лучше стандартной поддержки архивов Windows.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id 7zip.7zip -e"
+            ]
+          },
+          {
+            "id": "winget_everything",
+            "name": "Установить Everything",
+            "desc": "Молниеносный поиск файлов по имени. Один из самых полезных инструментов для Windows, особенно если много дисков и папок.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id voidtools.Everything -e"
+            ]
+          },
+          {
+            "id": "winget_quicklook",
+            "name": "Установить QuickLook",
+            "desc": "Добавляет предпросмотр файлов по пробелу, как на macOS. Удобно для изображений, PDF, текста и документов.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id QL-Win.QuickLook -e"
+            ]
+          },
+          {
+            "id": "winget_eartrumpet",
+            "name": "Установить EarTrumpet",
+            "desc": "Более удобный микшер громкости по приложениям. Полезно для игр, Discord, OBS, браузера и музыки.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id File-New-Project.EarTrumpet -e"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Диагностика железа",
+        "tweaks": [
+          {
+            "id": "winget_hwinfo",
+            "name": "Установить HWiNFO",
+            "desc": "Подробный мониторинг датчиков: температуры, частоты, напряжения, лимиты CPU/GPU. Хороший инструмент для диагностики перегрева и троттлинга.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id REALiX.HWiNFO -e"
+            ]
+          },
+          {
+            "id": "winget_crystaldiskinfo",
+            "name": "Установить CrystalDiskInfo",
+            "desc": "Показывает SMART, состояние SSD/HDD, ресурс и ошибки дисков. Нужная утилита перед любыми оптимизациями диска.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id CrystalDewWorld.CrystalDiskInfo -e"
+            ]
+          },
+          {
+            "id": "winget_gpuz",
+            "name": "Установить GPU-Z",
+            "desc": "Компактная диагностика видеокарты: модель, BIOS, шина, память, датчики, загрузка. Полезно для проверки драйвера и PCIe режима.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id TechPowerUp.GPU-Z -e"
+            ]
+          },
+          {
+            "id": "winget_wiztree",
+            "name": "Установить WizTree",
+            "desc": "Очень быстрый анализ занятого места на диске. Часто помогает найти гигабайты кэша, старые архивы и мусор.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id AntibodySoftware.WizTree -e"
+            ]
+          },
+          {
+            "id": "winget_latency_mon",
+            "name": "Установить LatencyMon",
+            "desc": "Инструмент для проверки DPC latency. Полезен, если трещит звук, микрофон, интерфейс или есть микрофризы.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id Resplendence.LatencyMon -e"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Работа и разработка",
+        "tweaks": [
+          {
+            "id": "winget_vscode",
+            "name": "Установить Visual Studio Code",
+            "desc": "Популярный редактор кода. Подходит для JavaScript, Python, Java, Markdown, Git и быстрых правок конфигов.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id Microsoft.VisualStudioCode -e"
+            ]
+          },
+          {
+            "id": "winget_git",
+            "name": "Установить Git",
+            "desc": "Нужен для разработки, GitHub, сборки проектов и многих CLI-инструментов. Установит Git Bash и системный git.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id Git.Git -e"
+            ]
+          },
+          {
+            "id": "winget_notepadpp",
+            "name": "Установить Notepad++",
+            "desc": "Быстрый текстовый редактор для логов, конфигов, скриптов и больших текстовых файлов.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id Notepad++.Notepad++ -e"
+            ]
+          },
+          {
+            "id": "winget_sumatrapdf",
+            "name": "Установить SumatraPDF",
+            "desc": "Очень лёгкий PDF/EPUB/CBZ просмотрщик без лишнего. Быстрее многих тяжёлых PDF-комбайнов.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id SumatraPDF.SumatraPDF -e"
+            ]
+          },
+          {
+            "id": "winget_vlc",
+            "name": "Установить VLC",
+            "desc": "Надёжный видеоплеер с поддержкой огромного числа форматов. Полезен, когда стандартный плеер не открывает файл.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id VideoLAN.VLC -e"
+            ]
+          },
+          {
+            "id": "winget_sharex",
+            "name": "Установить ShareX",
+            "desc": "Продвинутые скриншоты, запись области экрана, OCR и быстрые действия. Хорош для работы, багрепортов и гайдов.",
+            "risk": "warning",
+            "reg": [
+              "winget install --id ShareX.ShareX -e"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "browserdns": {
+    "title": "Браузеры, DNS и интернет",
+    "icon": "fa-globe",
+    "desc": "Настройки для браузеров, DNS, Edge/Chrome политик и сетевых мелочей. Это помогает убрать фоновые запуски, рекламу Microsoft и странные задержки сети.",
+    "groups": [
+      {
+        "name": "Edge и Chrome политики",
+        "tweaks": [
+          {
+            "id": "br_edge_startup_boost_off",
+            "name": "Отключить Edge Startup Boost",
+            "desc": "Запрещает Edge держать процессы заранее в фоне для ускоренного запуска. Уменьшает автозагрузку и фоновые процессы.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge\" /v StartupBoostEnabled /t REG_DWORD /d 0 /f"
+            ]
+          },
+          {
+            "id": "br_edge_background_off",
+            "name": "Отключить фоновые приложения Edge",
+            "desc": "Edge не будет продолжать работу фоновых расширений после закрытия браузера. Полезно, если в диспетчере задач постоянно висит msedge.exe.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge\" /v BackgroundModeEnabled /t REG_DWORD /d 0 /f"
+            ]
+          },
+          {
+            "id": "br_edge_first_run_off",
+            "name": "Отключить первый запуск Edge",
+            "desc": "Убирает приветственные экраны и первичную настройку Edge. Удобно после переустановки Windows или на нескольких ПК.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge\" /v HideFirstRunExperience /t REG_DWORD /d 1 /f"
+            ]
+          },
+          {
+            "id": "br_edge_shopping_off",
+            "name": "Отключить Shopping Assistant в Edge",
+            "desc": "Отключает встроенные подсказки покупок, купоны и сравнение цен. Делает браузер менее навязчивым.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge\" /v EdgeShoppingAssistantEnabled /t REG_DWORD /d 0 /f"
+            ]
+          },
+          {
+            "id": "br_chrome_background_off",
+            "name": "Отключить фоновые приложения Chrome",
+            "desc": "Chrome не будет оставлять фоновые процессы после закрытия окна. Особенно полезно на ПК с малым количеством ОЗУ.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKLM\\SOFTWARE\\Policies\\Google\\Chrome\" /v BackgroundModeEnabled /t REG_DWORD /d 0 /f"
+            ]
+          },
+          {
+            "id": "br_chrome_first_run_off",
+            "name": "Отключить первый запуск Chrome",
+            "desc": "Убирает приветственные экраны Chrome через политику. Удобно на чистой системе.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKLM\\SOFTWARE\\Policies\\Google\\Chrome\" /v PromotionalTabsEnabled /t REG_DWORD /d 0 /f"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "DNS и кэш",
+        "tweaks": [
+          {
+            "id": "dns_flush_cache",
+            "name": "Очистить DNS-кэш",
+            "desc": "Полезно после смены DNS, VPN, прокси или проблем с открытием сайтов. Команда безопасная и не меняет настройки адаптера.",
+            "risk": "safe",
+            "reg": [
+              "ipconfig /flushdns"
+            ]
+          },
+          {
+            "id": "dns_register_dns",
+            "name": "Обновить регистрацию DNS",
+            "desc": "Перерегистрирует DNS-записи клиента. Иногда помогает в офисных сетях, доменах и после смены сетевого адаптера.",
+            "risk": "safe",
+            "reg": [
+              "ipconfig /registerdns"
+            ]
+          },
+          {
+            "id": "dns_reset_winsock",
+            "name": "Сбросить Winsock",
+            "desc": "Помогает после кривых VPN, прокси-клиентов, сетевых фильтров и антивирусных сетевых модулей. После применения нужна перезагрузка.",
+            "risk": "warning",
+            "reg": [
+              "netsh winsock reset"
+            ]
+          },
+          {
+            "id": "dns_reset_tcpip",
+            "name": "Сбросить TCP/IP stack",
+            "desc": "Сбрасывает часть сетевой конфигурации Windows. Использовать, если интернет сломан после драйверов/VPN/прокси. После нужна перезагрузка.",
+            "risk": "warning",
+            "reg": [
+              "netsh int ip reset"
+            ]
+          },
+          {
+            "id": "dns_show_cache",
+            "name": "Сохранить текущий DNS-кэш",
+            "desc": "Создаёт файл со списком доменов из DNS-кэша. Нишево, но полезно при диагностике, какие адреса реально резолвились.",
+            "risk": "safe",
+            "reg": [
+              "ipconfig /displaydns > \"%USERPROFILE%\\Desktop\\dns-cache.txt\""
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Нишевые сетевые советы",
+        "tweaks": [
+          {
+            "id": "net_show_interfaces",
+            "name": "Сохранить список сетевых интерфейсов netsh",
+            "desc": "Показывает имена интерфейсов, которые нужны для ручной настройки DNS через netsh. Это безопаснее, чем вслепую менять адаптер Ethernet/Wi-Fi.",
+            "risk": "safe",
+            "reg": [
+              "netsh interface show interface > \"%USERPROFILE%\\Desktop\\network-interfaces.txt\""
+            ]
+          },
+          {
+            "id": "net_show_wifi_profiles",
+            "name": "Сохранить список Wi‑Fi профилей",
+            "desc": "Сохраняет имена Wi‑Fi профилей. Полезно перед переустановкой Windows или переносом настроек.",
+            "risk": "safe",
+            "reg": [
+              "netsh wlan show profiles > \"%USERPROFILE%\\Desktop\\wifi-profiles.txt\""
+            ],
+            "devices": [
+              "laptop"
+            ]
+          },
+          {
+            "id": "net_export_wifi_profiles",
+            "name": "Экспортировать Wi‑Fi профили",
+            "desc": "Экспортирует сохранённые Wi‑Fi профили в XML на рабочий стол. В файлах могут быть чувствительные данные, храните аккуратно.",
+            "risk": "warning",
+            "reg": [
+              "mkdir \"%USERPROFILE%\\Desktop\\WiFiProfiles\" 2>nul",
+              "netsh wlan export profile folder=\"%USERPROFILE%\\Desktop\\WiFiProfiles\" key=clear"
+            ],
+            "devices": [
+              "laptop"
+            ]
+          },
+          {
+            "id": "net_disable_llmnr",
+            "name": "Отключить LLMNR через политику",
+            "desc": "LLMNR — устаревшее локальное разрешение имён. В домашних сетях обычно не нужно, а в небезопасных сетях может быть лишней поверхностью атаки.",
+            "risk": "warning",
+            "reg": [
+              "reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient\" /v EnableMulticast /t REG_DWORD /d 0 /f"
+            ]
+          },
+          {
+            "id": "net_disable_smart_multihomed",
+            "name": "Отключить Smart Multi-Homed Name Resolution",
+            "desc": "Windows не будет параллельно резолвить DNS через все интерфейсы. Нишевый приватностный твик, полезен при VPN, но в редких сетях может повлиять на разрешение имён.",
+            "risk": "warning",
+            "reg": [
+              "reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient\" /v DisableSmartNameResolution /t REG_DWORD /d 1 /f"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "audio": {
+    "title": "Аудио и задержки",
+    "icon": "fa-volume-high",
+    "desc": "Нишевые настройки для звука, микрофона, OBS, USB-аудио и DPC latency. Не все дают прирост всем, но помогают при треске, задержках и микрофризах.",
+    "groups": [
+      {
+        "name": "Мультимедиа-приоритеты",
+        "tweaks": [
+          {
+            "id": "aud_user_ducking_off",
+            "name": "Отключить приглушение звука при звонках",
+            "desc": "Windows иногда снижает громкость других приложений при голосовой связи. Этот пункт ставит режим “ничего не делать”.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKCU\\Software\\Microsoft\\Multimedia\\Audio\" /v UserDuckingPreference /t REG_DWORD /d 3 /f"
+            ]
+          },
+          {
+            "id": "aud_system_profile_responsiveness",
+            "name": "SystemResponsiveness = 10",
+            "desc": "Снижает резерв ресурсов для фоновых мультимедиа-задач. Более мягкий вариант, чем 0, часто подходит для обычного ПК с играми и Discord.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\" /v SystemResponsiveness /t REG_DWORD /d 10 /f"
+            ]
+          },
+          {
+            "id": "aud_games_priority_high",
+            "name": "Повысить приоритет мультимедиа-профиля Games",
+            "desc": "Настраивает профиль Games в Multimedia SystemProfile. Может помочь играм и OBS, но если появятся проблемы со звуком — откатите.",
+            "risk": "warning",
+            "reg": [
+              "reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games\" /v \"GPU Priority\" /t REG_DWORD /d 8 /f",
+              "reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games\" /v Priority /t REG_DWORD /d 6 /f",
+              "reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games\" /v \"Scheduling Category\" /t REG_SZ /d High /f"
+            ]
+          },
+          {
+            "id": "aud_audio_task_priority",
+            "name": "Повысить приоритет профиля Audio",
+            "desc": "Настраивает MMCSS профиль Audio. Нишево: может помочь при треске звука, но не заменяет нормальные драйверы и проверку DPC latency.",
+            "risk": "warning",
+            "reg": [
+              "reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Audio\" /v Priority /t REG_DWORD /d 6 /f",
+              "reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Audio\" /v \"Scheduling Category\" /t REG_SZ /d High /f"
+            ]
+          },
+          {
+            "id": "aud_pro_audio_task",
+            "name": "Создать профиль Pro Audio",
+            "desc": "Нишевый профиль MMCSS для рабочих аудиосценариев. Сам по себе не магия, но некоторый софт может использовать такие категории.",
+            "risk": "warning",
+            "reg": [
+              "reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Pro Audio\" /v Affinity /t REG_DWORD /d 0 /f",
+              "reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Pro Audio\" /v Priority /t REG_DWORD /d 8 /f",
+              "reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Pro Audio\" /v \"Scheduling Category\" /t REG_SZ /d High /f"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "USB и энергосбережение",
+        "tweaks": [
+          {
+            "id": "aud_usb_selective_suspend_off",
+            "name": "Отключить USB Selective Suspend",
+            "desc": "Может помочь USB-аудиокартам, микрофонам, DAC и интерфейсам, которые отваливаются или щёлкают после простоя. На ноутбуке увеличит расход батареи.",
+            "risk": "warning",
+            "reg": [
+              "powercfg /setacvalueindex SCHEME_CURRENT SUB_USB USBSELECTIVE SUSPEND 0",
+              "powercfg /setdcvalueindex SCHEME_CURRENT SUB_USB USBSELECTIVE SUSPEND 0",
+              "powercfg /setactive SCHEME_CURRENT"
+            ]
+          },
+          {
+            "id": "aud_show_sound_panel",
+            "name": "Открыть классическую панель звука",
+            "desc": "Открывает mmsys.cpl — там проще проверить формат устройства, эксклюзивный режим, уровни, улучшения и устройство связи по умолчанию.",
+            "risk": "safe",
+            "reg": [
+              "start mmsys.cpl"
+            ]
+          },
+          {
+            "id": "aud_open_volume_mixer",
+            "name": "Открыть классический микшер громкости",
+            "desc": "Открывает старый микшер приложений. Часто быстрее, чем современная страница параметров Windows.",
+            "risk": "safe",
+            "reg": [
+              "sndvol.exe"
+            ]
+          },
+          {
+            "id": "aud_latency_advice",
+            "name": "Совет: проверить LatencyMon перед аудио-твиками",
+            "desc": "Записывает напоминание на рабочий стол. Если звук трещит, сначала проверьте DPC latency, драйвер Wi‑Fi/Bluetooth, GPU-драйвер и USB-контроллер.",
+            "risk": "safe",
+            "reg": [
+              "echo Проверьте LatencyMon: Wi-Fi/Bluetooth/GPU/USB драйверы часто вызывают треск звука. > \"%USERPROFILE%\\Desktop\\audio-latency-advice.txt\""
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "display": {
+    "title": "Экран и графика",
+    "icon": "fa-display",
+    "desc": "Визуальные и графические настройки: калибровка, ClearType, MPO, TDR и мелкие параметры, которые иногда влияют на игры, видео и комфорт.",
+    "groups": [
+      {
+        "name": "Картинка и читаемость",
+        "tweaks": [
+          {
+            "id": "disp_cleartype",
+            "name": "Открыть настройку ClearType",
+            "desc": "Запускает мастер ClearType. Один из самых недооценённых способов сделать текст приятнее, особенно на Windows после смены монитора.",
+            "risk": "safe",
+            "reg": [
+              "cttune.exe"
+            ]
+          },
+          {
+            "id": "disp_color_calibration",
+            "name": "Открыть калибровку цвета",
+            "desc": "Открывает стандартный мастер калибровки. Полезно после покупки монитора или если картинка слишком тёмная/светлая.",
+            "risk": "safe",
+            "reg": [
+              "dccw.exe"
+            ]
+          },
+          {
+            "id": "disp_jpeg_wallpaper_quality",
+            "name": "Качество JPEG-обоев 100%",
+            "desc": "Windows может пережимать JPEG-обои. Этот параметр ставит качество 100, чтобы фон рабочего стола не выглядел мыльным.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKCU\\Control Panel\\Desktop\" /v JPEGImportQuality /t REG_DWORD /d 100 /f"
+            ]
+          },
+          {
+            "id": "disp_disable_transparency",
+            "name": "Отключить прозрачность Windows",
+            "desc": "Уменьшает визуальные эффекты и иногда делает интерфейс отзывчивее на слабых GPU/встроенной графике.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\" /v EnableTransparency /t REG_DWORD /d 0 /f"
+            ]
+          },
+          {
+            "id": "disp_show_titlebar_color",
+            "name": "Включить цвет заголовков окон",
+            "desc": "Делает активные окна заметнее. Удобно, если много окон и сложно понять, какое активно.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKCU\\Software\\Microsoft\\Windows\\DWM\" /v ColorPrevalence /t REG_DWORD /d 1 /f"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Нишевые GPU-твики",
+        "tweaks": [
+          {
+            "id": "disp_disable_mpo",
+            "name": "Отключить MPO",
+            "desc": "MPO иногда вызывает мерцания, чёрные экраны, артефакты или проблемы с видео/браузером на отдельных драйверах. Если проблем нет — лучше не трогать.",
+            "risk": "warning",
+            "reg": [
+              "reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows\\Dwm\" /v OverlayTestMode /t REG_DWORD /d 5 /f"
+            ]
+          },
+          {
+            "id": "disp_tdr_delay_10",
+            "name": "Увеличить TDR Delay до 10 секунд",
+            "desc": "Даёт видеодрайверу больше времени перед сбросом. Может помочь при тяжёлых GPU-задачах, но не лечит нестабильный разгон или умирающую карту.",
+            "risk": "warning",
+            "reg": [
+              "reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\" /v TdrDelay /t REG_DWORD /d 10 /f"
+            ]
+          },
+          {
+            "id": "disp_monitor_timeout_ac_30",
+            "name": "Сон монитора от сети через 30 минут",
+            "desc": "Ставит таймаут выключения дисплея от сети на 30 минут. Полезно, если монитор горит часами без дела.",
+            "risk": "safe",
+            "reg": [
+              "powercfg /change monitor-timeout-ac 30"
+            ]
+          },
+          {
+            "id": "disp_monitor_timeout_dc_10",
+            "name": "Сон экрана от батареи через 10 минут",
+            "desc": "Ставит таймаут дисплея от батареи на 10 минут. Имеет смысл только на ноутбуке.",
+            "risk": "safe",
+            "reg": [
+              "powercfg /change monitor-timeout-dc 10"
+            ],
+            "devices": [
+              "laptop"
+            ]
+          },
+          {
+            "id": "disp_open_graphics_settings",
+            "name": "Открыть настройки графики Windows",
+            "desc": "Открывает страницу выбора GPU для приложений. Там можно назначить игре/OBS дискретную видеокарту или энергосбережение.",
+            "risk": "safe",
+            "reg": [
+              "start ms-settings:display-advancedgraphics"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "backup": {
+    "title": "Резерв и восстановление",
+    "icon": "fa-life-ring",
+    "desc": "Безопасные подготовительные действия: точки восстановления, экспорт драйверов, Wi‑Fi профилей и важных списков перед чисткой или твиками.",
+    "groups": [
+      {
+        "name": "Точки восстановления и реестр",
+        "tweaks": [
+          {
+            "id": "bak_enable_restore_c",
+            "name": "Включить защиту системы для C:",
+            "desc": "Пробует включить System Restore для диска C:. Без этого точки восстановления могут не создаваться. Иногда требуется настроить лимит места вручную.",
+            "risk": "warning",
+            "reg": [
+              "powershell -NoProfile -Command \"Enable-ComputerRestore -Drive C:\\\""
+            ]
+          },
+          {
+            "id": "bak_create_restore_point",
+            "name": "Создать точку восстановления",
+            "desc": "Создаёт точку восстановления перед экспериментами. Если защита системы выключена, команда может не сработать — проверьте вручную.",
+            "risk": "safe",
+            "reg": [
+              "powershell -NoProfile -Command \"Checkpoint-Computer -Description 'Manual_WinTweaker_Point' -RestorePointType MODIFY_SETTINGS\""
+            ]
+          },
+          {
+            "id": "bak_export_hkcu",
+            "name": "Экспортировать HKCU на рабочий стол",
+            "desc": "Сохраняет ветку реестра текущего пользователя. Файл может быть большим, зато помогает откатить пользовательские настройки.",
+            "risk": "safe",
+            "reg": [
+              "reg export HKCU \"%USERPROFILE%\\Desktop\\backup-HKCU.reg\" /y"
+            ]
+          },
+          {
+            "id": "bak_export_explorer",
+            "name": "Экспортировать настройки Explorer",
+            "desc": "Сохраняет настройки проводника и панели задач текущего пользователя. Полезно перед UI-твиками.",
+            "risk": "safe",
+            "reg": [
+              "reg export \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\" \"%USERPROFILE%\\Desktop\\backup-explorer.reg\" /y"
+            ]
+          },
+          {
+            "id": "bak_export_power_schemes",
+            "name": "Экспортировать текущую схему питания",
+            "desc": "Создаёт файл powercfg-list.txt со списком схем питания. Это не полный экспорт, но помогает понять, какая схема была активна.",
+            "risk": "safe",
+            "reg": [
+              "powercfg /list > \"%USERPROFILE%\\Desktop\\powercfg-list.txt\""
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Драйверы и сеть",
+        "tweaks": [
+          {
+            "id": "bak_export_drivers",
+            "name": "Экспортировать установленные драйверы",
+            "desc": "Сохраняет драйверы в папку DriverBackup на рабочем столе. Очень полезно перед переустановкой Windows, особенно для редкого Wi‑Fi/аудио/чипсета.",
+            "risk": "safe",
+            "reg": [
+              "mkdir \"%USERPROFILE%\\Desktop\\DriverBackup\" 2>nul",
+              "pnputil /export-driver * \"%USERPROFILE%\\Desktop\\DriverBackup\""
+            ]
+          },
+          {
+            "id": "bak_export_wifi_safe",
+            "name": "Экспортировать Wi‑Fi профили без ключей",
+            "desc": "Сохраняет Wi‑Fi профили без паролей. Безопаснее, чем экспорт key=clear, но для полного восстановления пароль придётся ввести заново.",
+            "risk": "safe",
+            "reg": [
+              "mkdir \"%USERPROFILE%\\Desktop\\WiFiProfiles\" 2>nul",
+              "netsh wlan export profile folder=\"%USERPROFILE%\\Desktop\\WiFiProfiles\""
+            ],
+            "devices": [
+              "laptop"
+            ]
+          },
+          {
+            "id": "bak_bitlocker_status",
+            "name": "Сохранить статус BitLocker",
+            "desc": "Показывает, включено ли шифрование дисков. Важно знать перед изменением разделов, BIOS/UEFI и переустановкой.",
+            "risk": "safe",
+            "reg": [
+              "manage-bde -status > \"%USERPROFILE%\\Desktop\\bitlocker-status.txt\""
+            ]
+          },
+          {
+            "id": "bak_bcd_backup",
+            "name": "Сделать резерв BCD",
+            "desc": "Сохраняет конфигурацию загрузчика Windows. Нишево, но полезно перед экспериментами с dual boot, bcdedit и режимами загрузки.",
+            "risk": "warning",
+            "reg": [
+              "bcdedit /export \"%USERPROFILE%\\Desktop\\BCD-backup\""
+            ]
+          },
+          {
+            "id": "bak_repair_commands_note",
+            "name": "Создать памятку команд восстановления",
+            "desc": "Создаёт текстовый файл с базовыми командами восстановления Windows: DISM, SFC, CHKDSK и сетевой сброс.",
+            "risk": "safe",
+            "reg": [
+              "echo DISM /Online /Cleanup-Image /RestoreHealth > \"%USERPROFILE%\\Desktop\\repair-commands.txt\"",
+              "echo sfc /scannow >> \"%USERPROFILE%\\Desktop\\repair-commands.txt\"",
+              "echo chkdsk C: /scan >> \"%USERPROFILE%\\Desktop\\repair-commands.txt\"",
+              "echo netsh winsock reset >> \"%USERPROFILE%\\Desktop\\repair-commands.txt\""
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "niche": {
+    "title": "Нишевые советы и скрытые параметры",
+    "icon": "fa-lightbulb",
+    "desc": "Менее очевидные вещи, которые часто знают только после долгой настройки Windows: скрытые power-настройки, длинные пути, WSL, зарезервированное хранилище и полезные заметки.",
+    "groups": [
+      {
+        "name": "Скрытые параметры Windows",
+        "tweaks": [
+          {
+            "id": "niche_long_paths",
+            "name": "Включить длинные пути Win32",
+            "desc": "Разрешает приложениям использовать пути длиннее классического ограничения MAX_PATH, если программа это поддерживает. Полезно для разработки, Node.js, Java и больших проектов.",
+            "risk": "safe",
+            "reg": [
+              "reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem\" /v LongPathsEnabled /t REG_DWORD /d 1 /f"
+            ]
+          },
+          {
+            "id": "niche_show_boost_mode",
+            "name": "Показать Processor Performance Boost Mode",
+            "desc": "Открывает скрытый пункт режима буста процессора в дополнительных настройках питания. Полезно для тонкой настройки температуры, шума и производительности.",
+            "risk": "safe",
+            "reg": [
+              "powercfg -attributes SUB_PROCESSOR PERFBOOSTMODE -ATTRIB_HIDE"
+            ]
+          },
+          {
+            "id": "niche_show_core_parking",
+            "name": "Показать настройки core parking",
+            "desc": "Открывает скрытые параметры парковки ядер в схеме питания. Нишево: не меняет значения, только делает пункты видимыми.",
+            "risk": "safe",
+            "reg": [
+              "powercfg -attributes SUB_PROCESSOR CPMINCORES -ATTRIB_HIDE",
+              "powercfg -attributes SUB_PROCESSOR CPMAXCORES -ATTRIB_HIDE"
+            ]
+          },
+          {
+            "id": "niche_show_usb_selective",
+            "name": "Показать USB selective suspend",
+            "desc": "Делает настройку USB Selective Suspend видимой в дополнительных параметрах электропитания. Удобно для ручной настройки USB-устройств.",
+            "risk": "safe",
+            "reg": [
+              "powercfg -attributes SUB_USB USBSELECTIVE -ATTRIB_HIDE"
+            ]
+          },
+          {
+            "id": "niche_reserved_storage_off",
+            "name": "Отключить Reserved Storage",
+            "desc": "Отключает резервированное хранилище Windows для обновлений. Может освободить место, но на маленьком диске обновлениям может стать сложнее устанавливаться.",
+            "risk": "warning",
+            "reg": [
+              "DISM /Online /Set-ReservedStorageState /State:Disabled"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Разработка и продвинутые функции",
+        "tweaks": [
+          {
+            "id": "niche_developer_mode",
+            "name": "Включить Developer Mode",
+            "desc": "Разрешает режим разработчика Windows. Полезно для разработки, локальных приложений и некоторых инструментов, но обычному пользователю не нужно.",
+            "risk": "warning",
+            "reg": [
+              "reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock\" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f"
+            ]
+          },
+          {
+            "id": "niche_enable_wsl",
+            "name": "Включить WSL",
+            "desc": "Включает Windows Subsystem for Linux. После применения нужна перезагрузка и установка дистрибутива Linux.",
+            "risk": "warning",
+            "reg": [
+              "dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart"
+            ]
+          },
+          {
+            "id": "niche_enable_virtual_machine_platform",
+            "name": "Включить Virtual Machine Platform",
+            "desc": "Нужно для WSL2 и некоторых виртуализационных сценариев. Может конфликтовать с отдельными античитами или старым софтом виртуализации.",
+            "risk": "warning",
+            "reg": [
+              "dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart"
+            ]
+          },
+          {
+            "id": "niche_enable_hyperv",
+            "name": "Включить Hyper-V",
+            "desc": "Включает гипервизор Microsoft. Полезно для виртуалок и разработки, но может влиять на некоторые игры/античиты и старые виртуализаторы.",
+            "risk": "warning",
+            "reg": [
+              "dism.exe /online /enable-feature /featurename:Microsoft-Hyper-V-All /all /norestart"
+            ]
+          },
+          {
+            "id": "niche_memory_compression_on",
+            "name": "Включить Memory Compression",
+            "desc": "Возвращает сжатие памяти Windows. Часто лучше оставить включённым, особенно на 8–16 ГБ ОЗУ, потому что это снижает своп на диск.",
+            "risk": "safe",
+            "reg": [
+              "powershell -NoProfile -Command \"Enable-MMAgent -MemoryCompression\""
+            ]
+          },
+          {
+            "id": "niche_memory_compression_off",
+            "name": "Отключить Memory Compression",
+            "desc": "Нишевый тестовый твик. Иногда его отключают для экспериментов с latency, но на большинстве систем лучше оставить включённым.",
+            "risk": "warning",
+            "reg": [
+              "powershell -NoProfile -Command \"Disable-MMAgent -MemoryCompression\""
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Практичные заметки",
+        "tweaks": [
+          {
+            "id": "niche_create_tuning_checklist",
+            "name": "Создать чеклист настройки Windows",
+            "desc": "Создаёт текстовый чеклист: драйверы чипсета/GPU, BIOS, план питания, автозагрузка, диск, температуры, обновления. Хорошая база перед твиками.",
+            "risk": "safe",
+            "reg": [
+              "echo 1. Chipset/GPU/LAN/Wi-Fi drivers > \"%USERPROFILE%\\Desktop\\windows-tuning-checklist.txt\"",
+              "echo 2. BIOS/UEFI and XMP/EXPO >> \"%USERPROFILE%\\Desktop\\windows-tuning-checklist.txt\"",
+              "echo 3. Startup apps and background apps >> \"%USERPROFILE%\\Desktop\\windows-tuning-checklist.txt\"",
+              "echo 4. Disk health and free space >> \"%USERPROFILE%\\Desktop\\windows-tuning-checklist.txt\"",
+              "echo 5. Temperatures and throttling >> \"%USERPROFILE%\\Desktop\\windows-tuning-checklist.txt\""
+            ]
+          },
+          {
+            "id": "niche_create_install_list",
+            "name": "Создать список полезных утилит",
+            "desc": "Создаёт текстовый список утилит, которые часто ставят на чистую Windows: 7-Zip, Everything, PowerToys, HWiNFO, CrystalDiskInfo, EarTrumpet, QuickLook.",
+            "risk": "safe",
+            "reg": [
+              "echo 7-Zip, Everything, PowerToys, HWiNFO, CrystalDiskInfo, EarTrumpet, QuickLook, ShareX > \"%USERPROFILE%\\Desktop\\recommended-tools.txt\""
+            ]
+          },
+          {
+            "id": "niche_create_gaming_checklist",
+            "name": "Создать игровой чеклист",
+            "desc": "Создаёт памятку для игр: драйвер GPU, режим экрана, Game Bar, HAGS, температуры, overlay-программы, план питания и сетевые задержки.",
+            "risk": "safe",
+            "reg": [
+              "echo GPU driver, temperatures, overlays, Game Bar, HAGS, fullscreen mode, power plan, network latency > \"%USERPROFILE%\\Desktop\\gaming-checklist.txt\""
+            ]
+          },
+          {
+            "id": "niche_create_laptop_checklist",
+            "name": "Создать чеклист для ноутбука",
+            "desc": "Создаёт памятку по ноутбуку: батарея, сон, Modern Standby, Wi‑Fi/Bluetooth, температуры, зарядка, отчёты batteryreport/sleepstudy.",
+            "risk": "safe",
+            "reg": [
+              "echo Battery report, SleepStudy, Modern Standby, Wi-Fi/Bluetooth, temperatures, charger, power plan > \"%USERPROFILE%\\Desktop\\laptop-checklist.txt\""
+            ],
+            "devices": [
+              "laptop"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+};
+Object.assign(tweaksDB, extraTweaksDB);
+
+let currentTab = "dashboard";
+let activeTweaks = new Set();
+
+const laptopOnlyTweaks = new Set([
+  "pwr_modern_standby_off",
+  "svc_usbwatt",
+  "svc_rmsvc",
+  "mnt_battery_report",
+  "mnt_sleepstudy"
+]);
+
+const desktopOnlyTweaks = new Set([]);
+
+const categoryBadgeIds = {
+  power: "pwr",
+  performance: "perf",
+  privacy: "priv",
+  services: "svc",
+  network: "net",
+  explorer: "exp",
+  updates: "upd",
+  context: "ctx",
+  security: "sec",
+  gaming: "gam",
+  debloat: "deb",
+  storage: "sto",
+  ui: "ui",
+  startup: "sta",
+  maintenance: "mnt",
+  quality: "ql",
+  diagnostics: "dia",
+  installers: "ins",
+  browserdns: "br",
+  audio: "aud",
+  display: "dis",
+  backup: "bak",
+  niche: "nic"
+};
+
+function init() {
+  normalizeData();
+  renderSidebar();
+  renderCategoryTabs();
+  renderPresets();
+  updateStats();
+  setupSearch();
+}
+
+function normalizeData() {
+  for (const preset of presets) {
+    preset.name = String(preset.name || "").replace(/^ПК:\s*/i, "").replace(/^Ноутбук:\s*/i, "").trim();
+  }
+
+  for (const cat of Object.values(tweaksDB)) {
+    cat.title = cleanCategoryTitle(cat.title);
+    cat.desc = cleanCategoryDesc(cat.desc);
+    for (const group of cat.groups) {
+      group.name = cleanCategoryTitle(group.name);
+      for (const tweak of group.tweaks) {
+        tweak.devices = getDevices(tweak);
+      }
+    }
+  }
+}
+
+function cleanCategoryTitle(text) {
+  return String(text || "")
+    .replace(/\s*\((ноутбук|ПК)\)\s*/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function cleanCategoryDesc(text) {
+  return String(text || "")
+    .replace(/\s*\((ноутбук|ПК)\)\s*/gi, "")
+    .replace(/^Для ноутбука\s+/i, "")
+    .replace(/^Для ноутбуков\s+/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getDevices(tweak) {
+  if (Array.isArray(tweak.devices)) return tweak.devices;
+  if (desktopOnlyTweaks.has(tweak.id)) return ["desktop"];
+  if (laptopOnlyTweaks.has(tweak.id)) return ["laptop"];
+  return ["desktop", "laptop"];
+}
+
+function getDeviceBadge(tweak) {
+  const devices = getDevices(tweak);
+  if (devices.length === 2) return "";
+  if (devices.includes("laptop")) {
+    return '<span class="badge badge-device-laptop"><i class="fas fa-laptop"></i> Только для ноутбука</span>';
+  }
+  return '<span class="badge badge-device-pc"><i class="fas fa-desktop"></i> Только для ПК</span>';
+}
+
+function getPresetDeviceBadge(preset) {
+  const devices = preset.devices || ["desktop", "laptop"];
+  if (devices.length === 2) return '<span class="badge badge-reg">ПК и ноутбук</span>';
+  if (devices.includes("laptop")) return '<span class="badge badge-device-laptop"><i class="fas fa-laptop"></i> Ноутбук</span>';
+  return '<span class="badge badge-device-pc"><i class="fas fa-desktop"></i> ПК</span>';
+}
+
+function deviceMatchesPreset(tweak, preset) {
+  const presetDevices = preset.devices || ["desktop", "laptop"];
+  const tweakDevices = getDevices(tweak);
+  return presetDevices.some(device => tweakDevices.includes(device));
+}
+
+function renderSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  const items = [
+    `<div class="sidebar-label">Общее</div>`,
+    sidebarButton("dashboard", "fa-table-cells-large", "Обзор", ""),
+    sidebarButton("presets", "fa-wand-magic-sparkles", "Пресеты", "")
+  ];
+
+  items.push(`<div class="sidebar-label">Категории</div>`);
+  for (const [key, cat] of Object.entries(tweaksDB)) {
+    const badge = categoryBadgeIds[key] ? `<span class="sidebar-badge" id="badge-${categoryBadgeIds[key]}">0</span>` : "";
+    items.push(sidebarButton(key, cat.icon, cat.title, badge));
+  }
+
+  items.push(`
+    <div class="sidebar-status">
+      <div class="status-line"><span class="dot"></span><span>Готов к применению</span></div>
+      <div class="progress"><div class="progress-fill" id="totalProgress"></div></div>
+      <div class="progress-text" id="progressText">0 / 0 твиков</div>
+    </div>
+  `);
+
+  sidebar.innerHTML = items.join("");
+}
+
+function sidebarButton(tabId, icon, label, extra) {
+  const active = tabId === "dashboard" ? " active" : "";
+  return `
+    <button class="sidebar-item${active}" type="button" data-tab="${tabId}" onclick="switchTab('${tabId}')">
+      <i class="fas ${icon}"></i>
+      <span>${escapeHtml(label)}</span>
+      ${extra || ""}
+    </button>
+  `;
+}
+
+function renderCategoryTabs() {
+  const holder = document.getElementById("categoryTabs");
+  holder.innerHTML = Object.entries(tweaksDB).map(([key, cat]) => `
+    <section class="tab" id="tab-${key}">
+      <div class="section-header">
+        <h1 class="section-title"><i class="fas ${cat.icon}"></i>${escapeHtml(cat.title)}</h1>
+        <p class="section-desc">${escapeHtml(cat.desc)}</p>
+      </div>
+      ${renderCategory(cat)}
+    </section>
+  `).join("");
+}
+
+function renderCategory(cat) {
+  return cat.groups.map(group => {
+    const tweaks = group.tweaks;
+    if (!tweaks.length) return "";
+    return `
+      <div class="tweak-group">
+        <div class="tweak-group-title"><i class="fas fa-chevron-right"></i>${escapeHtml(group.name)}</div>
+        ${renderRiskShelf("safe", "Рекомендуется", "Подходит для большинства пользователей", "fa-circle-check", tweaks)}
+        ${renderRiskShelf("warning", "С осторожностью", "Проверьте описание перед включением", "fa-triangle-exclamation", tweaks)}
+        ${renderRiskShelf("danger", "Для опытных пользователей", "Может повлиять на стабильность или привычный сценарий работы", "fa-skull-crossbones", tweaks)}
+      </div>
+    `;
+  }).join("");
+}
+
+function renderRiskShelf(risk, title, note, icon, tweaks) {
+  const bucket = tweaks.filter(t => t.risk === risk);
+  if (!bucket.length) return "";
+  return `
+    <div class="risk-shelf risk-${risk}">
+      <div class="risk-head">
+        <div>
+          <div class="risk-title"><i class="fas ${icon}"></i>${title}</div>
+          <div class="risk-note">${note}</div>
+        </div>
+        <div class="risk-counter">${bucket.length}</div>
+      </div>
+      <div class="risk-body">
+        ${bucket.map(renderTweakCard).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderTweakCard(tweak) {
+  const active = activeTweaks.has(tweak.id);
+  const regPreview = tweak.reg?.[0] ? shorten(tweak.reg[0], 95) : "";
+  return `
+    <div class="tweak-card risk-${tweak.risk}${active ? " active" : ""}" id="card-${tweak.id}" data-id="${tweak.id}">
+      <label class="toggle" aria-label="${escapeHtml(tweak.name)}">
+        <input type="checkbox" ${active ? "checked" : ""} onchange="toggleTweak('${tweak.id}', this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+      <div class="tweak-info">
+        <div class="tweak-name">${escapeHtml(tweak.name)} ${getDeviceBadge(tweak)}</div>
+        <div class="tweak-desc">${escapeHtml(tweak.desc)}</div>
+        <div class="tweak-meta">
+          ${getRiskBadge(tweak.risk)}
+          <span class="badge badge-reg">${escapeHtml(regPreview)}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function getRiskBadge(risk) {
+  const map = {
+    safe: '<span class="badge badge-safe"><i class="fas fa-check"></i> Рекомендуется</span>',
+    warning: '<span class="badge badge-warning"><i class="fas fa-triangle-exclamation"></i> С осторожностью</span>',
+    danger: '<span class="badge badge-danger"><i class="fas fa-skull-crossbones"></i> Для опытных</span>'
+  };
+  return map[risk] || "";
+}
+
+function renderPresets() {
+  const grid = document.getElementById("presetsGrid");
+  grid.innerHTML = presets.map(preset => {
+    const ids = resolvePresetTweaks(preset);
+    return `
+      <button class="preset-card" type="button" onclick="applyPreset('${preset.id}')">
+        <div class="preset-icon"><i class="fas ${preset.icon}"></i></div>
+        <div class="preset-name">${escapeHtml(preset.name)}</div>
+        <div class="preset-desc">${escapeHtml(preset.desc)}</div>
+        <div class="preset-meta">
+          ${getPresetDeviceBadge(preset)}
+          <span class="preset-count">${ids.length} твиков</span>
+        </div>
+      </button>
+    `;
+  }).join("");
+}
+
+function resolvePresetTweaks(preset) {
+  if (preset.mode === "safe") {
+    return allTweaks()
+      .filter(t => t.risk === "safe" && deviceMatchesPreset(t, preset))
+      .map(t => t.id);
+  }
+
+  return (preset.tweaks || []).filter(id => {
+    const tweak = findTweakById(id);
+    return tweak && deviceMatchesPreset(tweak, preset);
+  });
+}
+
+function allTweaks() {
+  const result = [];
+  for (const cat of Object.values(tweaksDB)) {
+    for (const group of cat.groups) {
+      result.push(...group.tweaks);
+    }
+  }
+  return result;
+}
+
+function switchTab(tabId) {
+  currentTab = tabId;
+  document.querySelectorAll(".sidebar-item").forEach(item => {
+    item.classList.toggle("active", item.dataset.tab === tabId);
+  });
+  document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
+  const target = document.getElementById(`tab-${tabId}`);
+  if (target) target.classList.add("active");
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+function toggleTweak(id, checked) {
+  if (checked) activeTweaks.add(id);
+  else activeTweaks.delete(id);
+
+  const card = document.getElementById(`card-${id}`);
+  if (card) card.classList.toggle("active", checked);
+  updateStats();
+}
+
+function updateStats() {
+  const tweaks = allTweaks();
+  const total = tweaks.length;
+  const safe = tweaks.filter(t => t.risk === "safe").length;
+  const warn = tweaks.filter(t => t.risk === "warning" || t.risk === "danger").length;
+  const active = activeTweaks.size;
+
+  document.getElementById("stat-total").textContent = total;
+  document.getElementById("stat-active").textContent = active;
+  document.getElementById("stat-safe").textContent = safe;
+  document.getElementById("stat-warn").textContent = warn;
+
+  const catCounts = {};
+  for (const [catKey, cat] of Object.entries(tweaksDB)) {
+    catCounts[catKey] = cat.groups
+      .flatMap(group => group.tweaks)
+      .filter(tweak => activeTweaks.has(tweak.id)).length;
+  }
+
+  for (const [catKey, badgeId] of Object.entries(categoryBadgeIds)) {
+    const el = document.getElementById(`badge-${badgeId}`);
+    if (!el) continue;
+    const value = catCounts[catKey] || 0;
+    el.textContent = value;
+    el.style.display = value > 0 ? "inline-block" : "none";
+  }
+
+  const percent = total ? Math.round((active / total) * 100) : 0;
+  document.getElementById("totalProgress").style.width = `${percent}%`;
+  document.getElementById("progressText").textContent = `${active} / ${total} твиков (${percent}%)`;
+}
+
+function applyPreset(presetId) {
+  const preset = presets.find(p => p.id === presetId);
+  if (!preset) return;
+
+  const ids = resolvePresetTweaks(preset);
+  ids.forEach(id => activeTweaks.add(id));
+
+  renderCategoryTabs();
+  updateStats();
+  if (currentTab !== "presets") switchTab(currentTab);
+  showToast("success", `Пресет «${preset.name}» применён: ${ids.length} твиков`);
+}
+
+function selectSafeOnly() {
+  allTweaks()
+    .filter(t => t.risk === "safe")
+    .forEach(t => activeTweaks.add(t.id));
+
+  renderCategoryTabs();
+  updateStats();
+  showToast("success", "Выбраны все рекомендуемые твики");
+}
+
+function deselectAll() {
+  activeTweaks.clear();
+  renderCategoryTabs();
+  updateStats();
+  showToast("info", "Все твики сняты");
+}
+
+function resetAll() {
+  activeTweaks.clear();
+  const input = document.getElementById("searchInput");
+  if (input) input.value = "";
+  renderCategoryTabs();
+  closeSearchDropdown();
+  updateStats();
+  switchTab("dashboard");
+  showToast("info", "Настройки сброшены");
+}
+
+function setupSearch() {
+  const input = document.getElementById("searchInput");
+  const dropdown = document.getElementById("searchDropdown");
+  if (!input || !dropdown) return;
+
+  let timer;
+  input.addEventListener("input", () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      filterTweaks(input.value);
+      renderSearchDropdown(input.value);
+    }, 90);
+  });
+
+  input.addEventListener("focus", () => renderSearchDropdown(input.value));
+  input.addEventListener("keydown", event => {
+    if (event.key === "Escape") closeSearchDropdown();
+  });
+
+  document.addEventListener("click", event => {
+    if (!event.target.closest(".search")) closeSearchDropdown();
+  });
+}
+
+
+function getSearchIndex() {
+  const result = [];
+  for (const [catKey, cat] of Object.entries(tweaksDB)) {
+    for (const group of cat.groups) {
+      for (const tweak of group.tweaks) {
+        result.push({ catKey, catTitle: cat.title, groupName: group.name, tweak });
+      }
+    }
+  }
+  return result;
+}
+
+function renderSearchDropdown(query) {
+  const dropdown = document.getElementById("searchDropdown");
+  if (!dropdown) return;
+
+  const q = query.trim().toLowerCase();
+  if (!q) {
+    dropdown.classList.remove("show");
+    dropdown.innerHTML = "";
+    return;
+  }
+
+  const matches = getSearchIndex().filter(item => {
+    const text = [
+      item.tweak.name,
+      item.tweak.desc,
+      item.catTitle,
+      item.groupName,
+      ...(item.tweak.reg || [])
+    ].join(" ").toLowerCase();
+    return text.includes(q);
+  });
+
+  if (!matches.length) {
+    dropdown.innerHTML = `<div class="search-empty">Ничего не найдено. Попробуй другое слово: например DNS, Bluetooth, DISM, Edge, audio, battery.</div>`;
+    dropdown.classList.add("show");
+    return;
+  }
+
+  const shown = matches.slice(0, 12);
+  dropdown.innerHTML = shown.map(item => renderSearchResult(item)).join("") +
+    (matches.length > shown.length ? `<div class="search-more">Показано ${shown.length} из ${matches.length}. Уточни запрос, чтобы сузить список.</div>` : "");
+  dropdown.classList.add("show");
+}
+
+function renderSearchResult(item) {
+  const risk = getRiskBadge(item.tweak.risk);
+  const device = getDeviceBadge(item.tweak);
+  return `
+    <button class="search-result" type="button" role="option" onclick="openSearchResult('${item.tweak.id}')">
+      <div class="search-result-title"><i class="fas ${tweaksDB[item.catKey].icon}"></i>${escapeHtml(item.tweak.name)}</div>
+      <div class="search-result-path">${escapeHtml(item.catTitle)} → ${escapeHtml(item.groupName)}</div>
+      <div class="search-result-meta">${risk}${device}</div>
+    </button>
+  `;
+}
+
+function openSearchResult(id) {
+  const location = getSearchIndex().find(item => item.tweak.id === id);
+  if (!location) return;
+
+  const input = document.getElementById("searchInput");
+  if (input) input.value = "";
+  closeSearchDropdown();
+  clearSearchFilter();
+  switchTab(location.catKey);
+
+  requestAnimationFrame(() => {
+    const card = document.getElementById(`card-${id}`);
+    if (!card) return;
+    card.scrollIntoView({ behavior: "smooth", block: "center" });
+    card.classList.add("search-highlight");
+    setTimeout(() => card.classList.remove("search-highlight"), 1600);
+  });
+}
+
+function closeSearchDropdown() {
+  const dropdown = document.getElementById("searchDropdown");
+  if (!dropdown) return;
+  dropdown.classList.remove("show");
+}
+
+function clearSearchFilter() {
+  document.querySelectorAll(".tweak-card, .risk-shelf, .tweak-group").forEach(el => {
+    el.style.display = "";
+  });
+}
+
+function filterTweaks(query) {
+  const q = query.trim().toLowerCase();
+
+  for (const card of document.querySelectorAll(".tweak-card")) {
+    const tweak = findTweakById(card.dataset.id);
+    if (!tweak || !q) {
+      card.style.display = "";
+      continue;
+    }
+
+    const searchable = [
+      tweak.name,
+      tweak.desc,
+      ...(tweak.reg || [])
+    ].join(" ").toLowerCase();
+
+    card.style.display = searchable.includes(q) ? "" : "none";
+  }
+
+  for (const shelf of document.querySelectorAll(".risk-shelf")) {
+    const hasVisible = [...shelf.querySelectorAll(".tweak-card")].some(card => card.style.display !== "none");
+    shelf.style.display = hasVisible ? "" : "none";
+  }
+
+  for (const group of document.querySelectorAll(".tweak-group")) {
+    const hasVisible = [...group.querySelectorAll(".tweak-card")].some(card => card.style.display !== "none");
+    group.style.display = hasVisible ? "" : "none";
+  }
+}
+
+function generateScript() {
+  if (activeTweaks.size === 0) {
+    showToast("error", "Нет выбранных твиков. Включите хотя бы один пункт.");
+    return;
+  }
+
+  const lines = [];
+  lines.push("@echo off");
+  lines.push(":: WinTweaker Liquid Glass v4.5.1.1 firefox-safe");
+  lines.push(`:: Дата: ${new Date().toLocaleString("ru-RU")}`);
+  lines.push(`:: Твиков: ${activeTweaks.size}`);
+  lines.push("::");
+  lines.push(":: ВАЖНО: Запустите этот файл от имени администратора.");
+  lines.push(":: Рекомендуется заранее создать точку восстановления.");
+  lines.push("::");
+  lines.push("powershell -Command \"Checkpoint-Computer -Description 'WinTweaker_v44_Before' -ErrorAction SilentlyContinue\"");
+  lines.push("");
+  lines.push("echo ========================================");
+  lines.push("echo   WinTweaker — применение твиков");
+  lines.push("echo ========================================");
+  lines.push("echo.");
+
+  let count = 0;
+  for (const [catKey, cat] of Object.entries(tweaksDB)) {
+    for (const group of cat.groups) {
+      for (const tweak of group.tweaks) {
+        if (!activeTweaks.has(tweak.id)) continue;
+        count++;
+        lines.push(`echo [${count}] ${tweak.name}`);
+        for (const cmd of tweak.reg || []) lines.push(cmd);
+        lines.push("echo   Готово.");
+        lines.push("echo.");
+      }
+    }
+  }
+
+  lines.push("echo ========================================");
+  lines.push(`echo   Готово! Применено ${count} твиков.`);
+  lines.push("echo   Рекомендуется перезагрузить компьютер.");
+  lines.push("echo ========================================");
+  lines.push("pause");
+
+  document.getElementById("scriptContent").textContent = lines.join("\n");
+  document.getElementById("scriptModal").classList.add("show");
+}
+
+function closeModal() {
+  document.getElementById("scriptModal").classList.remove("show");
+}
+
+function downloadScript() {
+  const content = document.getElementById("scriptContent").textContent;
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `WinTweaker_v44_${Date.now()}.bat`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  closeModal();
+  showToast("success", "Скрипт скачан. Запустите его от имени администратора.");
+}
+
+function copyScript() {
+  const content = document.getElementById("scriptContent").textContent;
+  navigator.clipboard.writeText(content)
+    .then(() => showToast("success", "Скрипт скопирован"))
+    .catch(() => showToast("error", "Не удалось скопировать"));
+}
+
+function findTweakById(id) {
+  for (const tweak of allTweaks()) {
+    if (tweak.id === id) return tweak;
+  }
+  return null;
+}
+
+function showToast(type, message) {
+  const container = document.getElementById("toastContainer");
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  const iconMap = {
+    success: "fa-circle-check",
+    error: "fa-circle-xmark",
+    info: "fa-circle-info"
+  };
+  toast.innerHTML = `<i class="fas ${iconMap[type] || iconMap.info}"></i><span>${escapeHtml(message)}</span>`;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(8px)";
+    toast.style.transition = "opacity .18s ease, transform .18s ease";
+    setTimeout(() => toast.remove(), 200);
+  }, 3200);
+}
+
+function shorten(text, max) {
+  const value = String(text || "");
+  return value.length > max ? value.slice(0, max - 1) + "…" : value;
+}
+
+function escapeHtml(value) {
+  const div = document.createElement("div");
+  div.textContent = value ?? "";
+  return div.innerHTML;
+}
+
+document.getElementById("scriptModal").addEventListener("click", event => {
+  if (event.target.id === "scriptModal") closeModal();
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") closeModal();
+});
+
+init();
+</script>
+</body>
+</html>
